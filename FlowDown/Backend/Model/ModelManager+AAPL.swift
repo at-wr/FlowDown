@@ -60,7 +60,7 @@ final class AppleIntelligenceModel {
         }
     }
     var modelDisplayName: String {
-        return "Apple Intelligence (On-Device)"
+        return "Apple Intelligence"
     }
     var modelIdentifier: String {
         return "apple.intelligence.ondevice"
@@ -86,14 +86,14 @@ class AppleIntelligenceChatClient: ChatService {
             // instructions (first .system message)
             let instructions = body.messages.compactMap { message -> String? in
                 if case let .system(content, _) = message {
-                    return extractText(content)
+                    return extractTextFromSystem(content)
                 }
                 return nil
             }.first ?? ""
             // prompt (last .user message)
             let prompt = body.messages.reversed().compactMap { message -> String? in
                 if case let .user(content, _) = message {
-                    return extractText(content)
+                    return extractTextFromUser(content)
                 }
                 return nil
             }.first ?? ""
@@ -159,18 +159,21 @@ class AppleIntelligenceChatClient: ChatService {
 
 // MARK: - Helpers
 
-private func extractText<T>(_ content: T) -> String {
+private func extractTextFromSystem(_ content: ChatRequestBody.Message.MessageContent<String, [String]>) -> String {
     switch content {
-    case let text as String:
+    case let .text(text):
         return text
-    case let parts as [String]:
+    case let .parts(parts):
         return parts.joined(separator: " ")
-    case let parts as [Any]:
-        return parts.compactMap { ($0 as? String) }.joined(separator: " ")
-    default:
-        if let value = content as? CustomStringConvertible {
-            return value.description
-        }
-        return ""
+    }
+}
+private func extractTextFromUser(_ content: ChatRequestBody.Message.MessageContent<String, [ChatRequestBody.Message.ContentPart]>) -> String {
+    switch content {
+    case let .text(text):
+        return text
+    case let .parts(parts):
+        return parts.compactMap { part in
+            if case let .text(text) = part { return text } else { return nil }
+        }.joined(separator: " ")
     }
 }
