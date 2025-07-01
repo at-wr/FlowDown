@@ -32,6 +32,9 @@ extension ConversationManager {
         let tempObject = sdb.createNewConversation()
         sdb.insertOrReplace(identifier: tempObject.id) { conv in
             conv.title = String(localized: "Conversation")
+            if conv.modelId?.isEmpty ?? true {
+                conv.modelId = ModelManager.ModelIdentifier.defaultModelForConversation
+            }
         }
         scanAll()
         guard let object = sdb.conversation(identifier: tempObject.id) else {
