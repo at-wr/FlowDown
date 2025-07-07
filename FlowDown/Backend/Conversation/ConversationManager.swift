@@ -34,6 +34,9 @@ class ConversationManager: NSObject {
 
     let conversations: CurrentValueSubject<[Conversation], Never> = .init([])
 
+    // Track conversation list visibility for optimization
+    var isConversationListVisible: Bool = false
+
     override private init() {
         super.init()
         temporaryEditorObjects = _temporaryEditorObjects

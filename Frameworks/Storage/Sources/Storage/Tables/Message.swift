@@ -11,8 +11,10 @@ import WCDBSwift
 
 public final class Message: Identifiable, Codable, TableCodable {
     public var id: Int64 = .init()
+    public var cloudId: String = ""
     public var conversationId: Conversation.ID = .init()
     public var creation: Date = .init()
+    public var lastModified: Date = .init()
     public var role: Role = .system
     public var thinkingDuration: TimeInterval = 0
     public var reasoningContent: String = ""
@@ -26,8 +28,10 @@ public final class Message: Identifiable, Codable, TableCodable {
         public typealias Root = Message
         public static let objectRelationalMapping = TableBinding(CodingKeys.self) {
             BindColumnConstraint(id, isPrimary: true, isAutoIncrement: true, isUnique: true)
+            BindColumnConstraint(cloudId, isNotNull: true, isUnique: true, defaultTo: "")
             BindColumnConstraint(conversationId, isNotNull: true)
             BindColumnConstraint(creation, isNotNull: true, defaultTo: Date(timeIntervalSince1970: 0))
+            BindColumnConstraint(lastModified, isNotNull: true, defaultTo: Date(timeIntervalSince1970: 0))
             BindColumnConstraint(role, isNotNull: true, defaultTo: Role.system.rawValue)
             BindColumnConstraint(thinkingDuration, isNotNull: true, defaultTo: 0)
             BindColumnConstraint(reasoningContent, isNotNull: true, defaultTo: "")
@@ -47,8 +51,10 @@ public final class Message: Identifiable, Codable, TableCodable {
         }
 
         case id
+        case cloudId
         case conversationId
         case creation
+        case lastModified
         case role
         case thinkingDuration
         case reasoningContent
@@ -61,6 +67,8 @@ public final class Message: Identifiable, Codable, TableCodable {
 
     public var isAutoIncrement: Bool = false // 用于定义是否使用自增的方式插入
     public var lastInsertedRowID: Int64 = 0 // 用于获取自增插入后的主键值
+
+    public init() {}
 }
 
 public extension Message.Role {
@@ -199,8 +207,10 @@ public extension Message {
 extension Message: Equatable {
     public static func == (lhs: Message, rhs: Message) -> Bool {
         lhs.id == rhs.id &&
+            lhs.cloudId == rhs.cloudId &&
             lhs.conversationId == rhs.conversationId &&
             lhs.creation == rhs.creation &&
+            lhs.lastModified == rhs.lastModified &&
             lhs.role == rhs.role &&
             lhs.thinkingDuration == rhs.thinkingDuration &&
             lhs.reasoningContent == rhs.reasoningContent &&
@@ -213,8 +223,10 @@ extension Message: Equatable {
 extension Message: Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(id)
+        hasher.combine(cloudId)
         hasher.combine(conversationId)
         hasher.combine(creation)
+        hasher.combine(lastModified)
         hasher.combine(role)
         hasher.combine(thinkingDuration)
         hasher.combine(reasoningContent)

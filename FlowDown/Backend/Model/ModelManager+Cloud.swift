@@ -62,30 +62,54 @@ extension ModelManager {
         for model in models where model.id.isEmpty {
             // Ensure all models have a valid ID
             model.id = UUID().uuidString
-            sdb.cluodModelRemove(identifier: "")
+            sdb.cloudModelRemove(identifier: "")
             sdb.cloudModelEdit(identifier: model.id) { $0.id = model.id }
             return scanCloudModels()
         }
         return models
     }
 
+    func refreshCloudModels() {
+        let models = scanCloudModels()
+        cloudModels.send(models)
+        print("[+] refreshed \(models.count) cloud models")
+    }
+
     func newCloudModel() -> CloudModel {
         let object = CloudModel()
         sdb.cloudModelPut(object)
+        CloudKitSyncManager.shared.syncLocalChange(for: object, changeType: .create)
         defer { cloudModels.send(scanCloudModels()) }
+
+        // Trigger immediate sync for better responsiveness
+        Task {
+            CloudKitSyncManager.shared.performFullSync()
+        }
+
         return object
     }
 
     func newCloudModel(profile: CloudModel) -> CloudModel {
-        profile.id = UUID().uuidString
+        // Only assign a new UUID if the profile doesn't already have one
+        // This preserves deterministic UUIDs for builtin models
+        if profile.id.isEmpty {
+            profile.id = UUID().uuidString
+        }
         sdb.cloudModelPut(profile)
+        CloudKitSyncManager.shared.syncLocalChange(for: profile, changeType: .create)
         defer { cloudModels.send(scanCloudModels()) }
         return profile
     }
 
     func insertCloudModel(_ model: CloudModel) {
         sdb.cloudModelPut(model)
+        CloudKitSyncManager.shared.syncLocalChange(for: model, changeType: .create)
         cloudModels.send(scanCloudModels())
+
+        // Trigger immediate sync for cloud model import
+        Task {
+            CloudKitSyncManager.shared.performFullSync()
+        }
     }
 
     func cloudModel(identifier: CloudModelIdentifier?) -> CloudModel? {
@@ -94,13 +118,20 @@ extension ModelManager {
     }
 
     func removeCloudModel(identifier: CloudModelIdentifier) {
-        sdb.cluodModelRemove(identifier: identifier)
+        if let model = cloudModel(identifier: identifier) {
+            CloudKitSyncManager.shared.syncLocalChange(for: model, changeType: .delete)
+        }
+        sdb.cloudModelRemove(identifier: identifier)
         cloudModels.send(scanCloudModels())
     }
 
     func editCloudModel(identifier: CloudModelIdentifier?, block: @escaping (inout CloudModel) -> Void) {
         guard let identifier else { return }
         sdb.cloudModelEdit(identifier: identifier, block)
+        if let model = sdb.cloudModel(with: identifier) {
+            // Use forced sync for configuration changes to bypass debouncing
+            CloudKitSyncManager.shared.forceSyncLocalChange(for: model, changeType: .update)
+        }
         cloudModels.send(scanCloudModels())
     }
 

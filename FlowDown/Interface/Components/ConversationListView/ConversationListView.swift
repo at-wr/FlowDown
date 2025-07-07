@@ -71,6 +71,10 @@ class ConversationListView: UIView {
         tableView.sectionHeaderTopPadding = 0
         tableView.sectionHeaderHeight = UITableView.automaticDimension
 
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(handlePullToRefresh), for: .valueChanged)
+        tableView.refreshControl = refreshControl
+
         selection
             .ensureMainThread()
             .sink { [weak self] identifier in
@@ -187,8 +191,22 @@ class ConversationListView: UIView {
 
         DispatchQueue.main.async {
             var snapshot = self.dataSource.snapshot()
-            snapshot.reconfigureItems([identifier])
-            self.dataSource.apply(snapshot, animatingDifferences: true)
+
+            // Safety check: only reconfigure if the item exists in the snapshot
+            if snapshot.itemIdentifiers.contains(identifier) {
+                snapshot.reconfigureItems([identifier])
+                self.dataSource.apply(snapshot, animatingDifferences: true)
+            } else {
+                print("[+] Warning: Attempted to select conversation \(identifier) that doesn't exist in snapshot yet")
+                // Schedule a retry after a short delay to allow data source to update
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    var retrySnapshot = self.dataSource.snapshot()
+                    if retrySnapshot.itemIdentifiers.contains(identifier) {
+                        retrySnapshot.reconfigureItems([identifier])
+                        self.dataSource.apply(retrySnapshot, animatingDifferences: true)
+                    }
+                }
+            }
         }
     }
 
@@ -196,7 +214,11 @@ class ConversationListView: UIView {
         guard tableView.indexPathsForSelectedRows?.count ?? 0 == 0 else { return }
         let item = ConversationManager.shared.conversations.value.first
         if let item {
-            select(identifier: item.id)
+            // Only select if the item exists in the current snapshot
+            let snapshot = dataSource.snapshot()
+            if snapshot.itemIdentifiers.contains(item.id) {
+                select(identifier: item.id)
+            }
         } else {
             selection.send(nil)
         }
@@ -242,6 +264,100 @@ class ConversationListView: UIView {
         }
         if !resolved {
             super.pressesBegan(presses, with: event)
+        }
+    }
+
+    @objc private func handlePullToRefresh(_: UIRefreshControl) {
+        print("[+] Pull-to-refresh triggered")
+
+        // Check if sync is already in progress
+        let syncManager = CloudKitSyncManager.shared
+        let currentStatus = syncManager.syncStatus
+        let canStartSync = switch currentStatus {
+        case .idle, .completed, .failed:
+            true
+        default:
+            false
+        }
+
+        print("[+] Current sync status: \(currentStatus), can start sync: \(canStartSync)")
+
+        guard canStartSync else {
+            // Sync already in progress, end refresh immediately
+            print("[+] Sync already in progress, ending refresh")
+            DispatchQueue.main.async { [weak self] in
+                self?.tableView.refreshControl?.endRefreshing()
+            }
+            return
+        }
+
+        // Set up observers for sync completion
+        var syncCompletionObserver: NSObjectProtocol?
+        var syncFailureObserver: NSObjectProtocol?
+        var timeoutWorkItem: DispatchWorkItem?
+
+        let endRefresh = { [weak self] in
+            print("[+] Ending pull-to-refresh")
+            DispatchQueue.main.async {
+                self?.tableView.refreshControl?.endRefreshing()
+                if let observer = syncCompletionObserver {
+                    NotificationCenter.default.removeObserver(observer)
+                }
+                if let observer = syncFailureObserver {
+                    NotificationCenter.default.removeObserver(observer)
+                }
+                timeoutWorkItem?.cancel()
+            }
+        }
+
+        // Listen for sync completion
+        syncCompletionObserver = NotificationCenter.default.addObserver(
+            forName: .cloudKitSyncCompleted,
+            object: nil,
+            queue: .main
+        ) { _ in
+            print("[+] Received CloudKit sync completed notification")
+            endRefresh()
+        }
+
+        // Listen for sync failure
+        syncFailureObserver = NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("CloudKitSyncFailed"),
+            object: nil,
+            queue: .main
+        ) { _ in
+            print("[+] Received CloudKit sync failed notification")
+            endRefresh()
+        }
+
+        // Trigger CloudKit sync on pull-to-refresh
+        print("[+] Starting CloudKit sync from pull-to-refresh")
+        syncManager.performFullSync()
+
+        // Monitor sync status changes in addition to notifications
+        var statusObserver: AnyCancellable?
+        statusObserver = syncManager.$syncStatus
+            .receive(on: DispatchQueue.main)
+            .sink { status in
+                switch status {
+                case .completed, .failed:
+                    print("[+] Sync status changed to: \(status)")
+                    statusObserver?.cancel()
+                    endRefresh()
+                default:
+                    break
+                }
+            }
+
+        // Fallback timeout in case notifications don't fire
+        timeoutWorkItem = DispatchWorkItem {
+            print("[+] Pull-to-refresh timeout reached, ending refresh")
+            statusObserver?.cancel()
+            endRefresh()
+        }
+
+        if let timeoutWorkItem {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 15, execute: timeoutWorkItem)
         }
     }
 }

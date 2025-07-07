@@ -13,6 +13,7 @@ public final class CloudModel: Identifiable, Codable, Equatable, Hashable, Table
     public var model_identifier: String = ""
     public var model_list_endpoint: String = ""
     public var creation: Date = .init()
+    public var lastModified: Date = .init()
     public var endpoint: String = ""
     public var token: String = ""
     public var headers: [String: String] = [:] // additional headers
@@ -30,6 +31,7 @@ public final class CloudModel: Identifiable, Codable, Equatable, Hashable, Table
             BindColumnConstraint(model_identifier, isNotNull: true, defaultTo: "")
             BindColumnConstraint(model_list_endpoint, isNotNull: true, defaultTo: "")
             BindColumnConstraint(creation, isNotNull: true, defaultTo: Date(timeIntervalSince1970: 0))
+            BindColumnConstraint(lastModified, isNotNull: true, defaultTo: Date(timeIntervalSince1970: 0))
             BindColumnConstraint(endpoint, isNotNull: true, defaultTo: "")
             BindColumnConstraint(token, isNotNull: true, defaultTo: "")
             BindColumnConstraint(headers, isNotNull: true, defaultTo: [String: String]())
@@ -42,6 +44,7 @@ public final class CloudModel: Identifiable, Codable, Equatable, Hashable, Table
         case model_identifier
         case model_list_endpoint
         case creation
+        case lastModified
         case endpoint
         case token
         case headers
@@ -66,6 +69,7 @@ public final class CloudModel: Identifiable, Codable, Equatable, Hashable, Table
         self.model_identifier = model_identifier
         self.model_list_endpoint = model_list_endpoint
         self.creation = creation
+        lastModified = creation
         self.endpoint = endpoint
         self.token = token
         self.headers = headers
@@ -79,6 +83,7 @@ public final class CloudModel: Identifiable, Codable, Equatable, Hashable, Table
         model_identifier = try container.decodeIfPresent(String.self, forKey: .model_identifier) ?? ""
         model_list_endpoint = try container.decodeIfPresent(String.self, forKey: .model_list_endpoint) ?? ""
         creation = try container.decodeIfPresent(Date.self, forKey: .creation) ?? Date()
+        lastModified = try container.decodeIfPresent(Date.self, forKey: .lastModified) ?? creation
         endpoint = try container.decodeIfPresent(String.self, forKey: .endpoint) ?? ""
         token = try container.decodeIfPresent(String.self, forKey: .token) ?? ""
         headers = try container.decodeIfPresent([String: String].self, forKey: .headers) ?? [:]
@@ -96,6 +101,7 @@ public final class CloudModel: Identifiable, Codable, Equatable, Hashable, Table
         hasher.combine(model_identifier)
         hasher.combine(model_list_endpoint)
         hasher.combine(creation)
+        hasher.combine(lastModified)
         hasher.combine(endpoint)
         hasher.combine(token)
         hasher.combine(headers)

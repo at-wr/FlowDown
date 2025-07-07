@@ -61,11 +61,24 @@ extension SettingController.SettingContent.ModelController: UITableViewDelegate 
                 case .local:
                     preconditionFailure()
                 case .cloud:
-                    guard let model = ModelManager.shared.cloudModel(identifier: itemIdentifier.identifier) else {
+                    guard let originalModel = ModelManager.shared.cloudModel(identifier: itemIdentifier.identifier) else {
                         return
                     }
-                    model.id = UUID().uuidString
-                    ModelManager.shared.insertCloudModel(model)
+
+                    // for Syncing
+                    let duplicatedModel = CloudModel()
+                    duplicatedModel.id = UUID().uuidString
+                    duplicatedModel.model_identifier = originalModel.model_identifier + " (Copy)"
+                    duplicatedModel.model_list_endpoint = originalModel.model_list_endpoint
+                    duplicatedModel.creation = Date()
+                    duplicatedModel.lastModified = Date()
+                    duplicatedModel.endpoint = originalModel.endpoint
+                    duplicatedModel.token = originalModel.token
+                    duplicatedModel.headers = originalModel.headers
+                    duplicatedModel.capabilities = originalModel.capabilities
+                    duplicatedModel.context = originalModel.context
+                    duplicatedModel.comment = originalModel.comment
+                    ModelManager.shared.insertCloudModel(duplicatedModel)
                 }
             })
         }

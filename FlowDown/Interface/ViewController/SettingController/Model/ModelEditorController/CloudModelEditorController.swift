@@ -485,15 +485,26 @@ class CloudModelEditorController: StackScrollController {
 
         let duplicateModel = ConfigurableActionView { [weak self] _ in
             guard let nav = self?.navigationController else { return }
-            let newIdentifier = UUID().uuidString
-            ModelManager.shared.editCloudModel(identifier: self?.identifier) {
-                $0.id = newIdentifier
-                $0.model_identifier = ""
-            }
-            guard let newModel = ModelManager.shared.cloudModel(identifier: newIdentifier) else { return }
-            assert(newModel.id == newIdentifier)
+            guard let originalModel = ModelManager.shared.cloudModel(identifier: self?.identifier) else { return }
+
+            // for Syncing
+            let duplicatedModel = CloudModel()
+            duplicatedModel.id = UUID().uuidString
+            duplicatedModel.model_identifier = originalModel.model_identifier + " (Copy)"
+            duplicatedModel.model_list_endpoint = originalModel.model_list_endpoint
+            duplicatedModel.creation = Date()
+            duplicatedModel.lastModified = Date()
+            duplicatedModel.endpoint = originalModel.endpoint
+            duplicatedModel.token = originalModel.token
+            duplicatedModel.headers = originalModel.headers
+            duplicatedModel.capabilities = originalModel.capabilities
+            duplicatedModel.context = originalModel.context
+            duplicatedModel.comment = originalModel.comment
+
+            ModelManager.shared.insertCloudModel(duplicatedModel)
+
             nav.popViewController(animated: true) {
-                let editor = CloudModelEditorController(identifier: newModel.id)
+                let editor = CloudModelEditorController(identifier: duplicatedModel.id)
                 nav.pushViewController(editor, animated: true)
             }
         }

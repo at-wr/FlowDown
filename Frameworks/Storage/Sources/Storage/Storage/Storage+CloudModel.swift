@@ -42,13 +42,14 @@ public extension Storage {
         )
         guard var object = read else { return }
         block(&object)
+        object.lastModified = Date()
         try? db.insertOrReplace(
             [object],
             intoTable: CloudModel.table
         )
     }
 
-    func cluodModelRemove(identifier: CloudModel.ID) {
+    func cloudModelRemove(identifier: CloudModel.ID) {
         try? db.delete(
             fromTable: CloudModel.table,
             where: CloudModel.Properties.id == identifier

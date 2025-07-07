@@ -11,7 +11,10 @@ import WCDBSwift
 public extension Storage {
     func makeMessage(with conversationID: Conversation.ID) -> Message {
         let message = Message()
+        message.cloudId = UUID().uuidString
         message.conversationId = conversationID
+        message.creation = Date()
+        message.lastModified = Date()
         message.isAutoIncrement = true
         try? db.insert([message], intoTable: Message.table)
         message.id = message.lastInsertedRowID
@@ -45,6 +48,7 @@ public extension Storage {
     }
 
     func insertOrReplace(object: Message) {
+        object.lastModified = Date()
         try? db.insertOrReplace(
             [object],
             intoTable: Message.table
@@ -52,6 +56,9 @@ public extension Storage {
     }
 
     func insertOrReplace(messages: [Message]) {
+        for message in messages {
+            message.lastModified = Date()
+        }
         try? db.insertOrReplace(messages, intoTable: Message.table)
     }
 
@@ -62,6 +69,7 @@ public extension Storage {
         )
         guard var object = read else { return }
         block(&object)
+        object.lastModified = Date()
         try? db.insertOrReplace(
             [object],
             intoTable: Message.table

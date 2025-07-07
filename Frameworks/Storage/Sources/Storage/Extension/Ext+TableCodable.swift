@@ -8,6 +8,6 @@
 import Foundation
 import WCDBSwift
 
-extension TableEncodable {
+public extension TableEncodable {
     static var table: String { String(describing: self) }
 }

@@ -28,7 +28,7 @@ extension CloudModel {
 
             case .mistral:
                 CloudModel(
-                    id: "78c9c492-ef7c-4504-aa95-04e4ce3a4602",
+                    id: "a7f8e9d6-c5b4-4a3b-9f2e-1d8c7b6a5e4f",
                     model_identifier: "mistral",
                     endpoint: "https://text.pollinations.ai/openai/v1/chat/completions",
                     context: .medium_64k,
@@ -38,7 +38,7 @@ extension CloudModel {
 
             case .llama:
                 CloudModel(
-                    id: "78c9c492-ef7c-4504-aa95-04e4ce3a4602",
+                    id: "3e5f7d2a-8b9c-4e1f-a6d5-2c4b7e9f1a3d",
                     model_identifier: "llama-vision",
                     endpoint: "https://text.pollinations.ai/openai/v1/chat/completions",
                     context: .medium_64k,

@@ -11,10 +11,35 @@ import RichEditor
 import Storage
 
 extension ConversationManager {
+    // Debouncing variables for scan operations
+    private static var scanWorkItem: DispatchWorkItem?
+    private static let scanDebounceInterval: TimeInterval = 0.1
+
     func scanAll() {
-        let items: [Conversation] = sdb.conversationList()
-        print("[+] scanned \(items.count) conversations")
-        conversations.send(items)
+        // Cancel any pending scan operations
+        Self.scanWorkItem?.cancel()
+
+        // Create new debounced scan operation
+        Self.scanWorkItem = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+
+            // Perform database operation on background queue
+            DispatchQueue.global(qos: .userInitiated).async {
+                let items: [Conversation] = sdb.conversationList()
+                print("[+] scanned \(items.count) conversations")
+
+                // Update UI on main queue
+                DispatchQueue.main.async {
+                    self.conversations.send(items)
+                }
+            }
+        }
+
+        // Schedule the debounced operation
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + Self.scanDebounceInterval,
+            execute: Self.scanWorkItem!
+        )
     }
 
     func initialConversation() -> Conversation {
@@ -40,6 +65,18 @@ extension ConversationManager {
         guard let object = sdb.conversationWith(identifier: tempObject.id) else {
             preconditionFailure()
         }
+        
+        CloudKitSyncManager.shared.syncLocalChange(for: object, changeType: .create)
+
+        Task {
+            do {
+                try await CloudKitSyncManager.shared.uploadPendingChanges()
+                print("[+] Successfully synced new conversation \(object.id)")
+            } catch {
+                print("[-] Failed to sync new conversation: \(error.localizedDescription)")
+            }
+        }
+
         print("[+] created a new conversation with id: \(object.id)")
         NotificationCenter.default.post(name: .newChatCreated, object: object.id)
         // guide message when no history message
@@ -95,7 +132,7 @@ extension ConversationManager {
         let conv = conversation(identifier: identifier)
         guard var conv else { return }
         block(&conv)
-        sdb.conversationUpdate(object: conv)
+        sdb.updateConversation(conv, notifySync: true)
         scanAll()
     }
 
@@ -108,10 +145,16 @@ extension ConversationManager {
             )
         }
         scanAll()
+        if let newId = ans, let newConv = sdb.conversationWith(identifier: newId) {
+            CloudKitSyncManager.shared.syncLocalChange(for: newConv, changeType: .create)
+        }
         return ans
     }
 
     func deleteConversation(identifier: Conversation.ID) {
+        if let conv = conversation(identifier: identifier) {
+            CloudKitSyncManager.shared.syncLocalChange(for: conv, changeType: .delete)
+        }
         let session = ConversationSessionManager.shared.session(for: identifier)
         session.cancelCurrentTask {}
         sdb.conversationRemove(conversationWith: identifier)
@@ -120,6 +163,9 @@ extension ConversationManager {
     }
 
     func eraseAll() {
+        for conv in conversations.value {
+            CloudKitSyncManager.shared.syncLocalChange(for: conv, changeType: .delete)
+        }
         sdb.conversationsDrop()
         clearRichEditorObject()
         ConversationManager.shouldShowGuideMessage = true
@@ -139,6 +185,8 @@ extension ConversationManager {
 
 extension Notification.Name {
     static let newChatCreated = Notification.Name("newChatCreated")
+    static let cloudKitSyncCompleted = Notification.Name("cloudKitSyncCompleted")
+    static let cloudKitDataProcessed = Notification.Name("cloudKitDataProcessed")
 }
 
 extension ConversationManager {

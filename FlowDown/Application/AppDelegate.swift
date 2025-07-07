@@ -49,6 +49,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             .sink { _ in
                 UIMenuSystem.main.setNeedsRebuild()
             }
+        setupCloudKit()
+        registerBackgroundTask()
         return true
     }
 
@@ -59,9 +61,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationDidBecomeActive(_: UIApplication) {
         MLX.GPU.onApplicationBecomeActivate()
+
+        // Trigger CloudKit sync when app becomes active
+        CloudKitSyncManager.shared.performFullSync()
     }
 
     func applicationWillResignActive(_: UIApplication) {
         MLX.GPU.onApplicationResignActivate()
+    }
+
+    func applicationDidEnterBackground(_: UIApplication) {
+        scheduleCompactionTask()
     }
 }

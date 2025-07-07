@@ -22,6 +22,7 @@ public extension Storage {
 
     func attachmentMake(with messageID: Message.ID) -> Attachment {
         let attachment = Attachment()
+        attachment.cloudId = UUID().uuidString // Assign cloudId immediately to prevent sync issues
         attachment.messageId = messageID
         attachment.isAutoIncrement = true
         try? db.insert([attachment], intoTable: Attachment.table)
@@ -32,5 +33,12 @@ public extension Storage {
 
     func attachmentsUpdate(_ attachments: [Attachment]) {
         try? db.insertOrReplace(attachments, intoTable: Attachment.table)
+    }
+
+    func attachmentRemove(byCloudId cloudId: String) {
+        try? db.delete(
+            fromTable: Attachment.table,
+            where: Attachment.Properties.cloudId == cloudId
+        )
     }
 }

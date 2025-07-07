@@ -142,16 +142,23 @@ extension SettingController.SettingContent {
             let localModels = ModelManager.shared.localModels.value.filter {
                 searchKey.isEmpty || $0.model_identifier.localizedCaseInsensitiveContains(searchKey)
             }
+            let remoteModels = ModelManager.shared.cloudModels.value.filter {
+                searchKey.isEmpty || $0.model_identifier.localizedCaseInsensitiveContains(searchKey)
+            }
+
+            // Get sets of model identifiers to detect duplicates
+            let localModelIdentifiers = Set(localModels.map(\.model_identifier))
+            let remoteModelIdentifiers = Set(remoteModels.map(\.model_identifier))
+
+            let deduplicatedRemoteModels = remoteModels
+
             if !localModels.isEmpty, showLocalModels {
                 snapshot.appendSections([.local])
                 snapshot.appendItems(localModels.map { ModelViewModel(type: .local, identifier: $0.id) }, toSection: .local)
             }
-            let remoteModels = ModelManager.shared.cloudModels.value.filter {
-                searchKey.isEmpty || $0.model_identifier.localizedCaseInsensitiveContains(searchKey)
-            }
-            if !remoteModels.isEmpty, showCloudModels {
+            if !deduplicatedRemoteModels.isEmpty, showCloudModels {
                 snapshot.appendSections([.cloud])
-                snapshot.appendItems(remoteModels.map { ModelViewModel(type: .cloud, identifier: $0.id) }, toSection: .cloud)
+                snapshot.appendItems(deduplicatedRemoteModels.map { ModelViewModel(type: .cloud, identifier: $0.id) }, toSection: .cloud)
             }
             dataSource.apply(snapshot, animatingDifferences: true)
             updateVisibleItems()

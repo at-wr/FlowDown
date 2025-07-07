@@ -263,6 +263,15 @@ extension ConversationSession {
         await requestUpdate(view: currentMessageListView)
 
         print("[*] inference done")
+        
+        // Force sync all assistant messages created during inference
+        // This bypasses debouncing to ensure immediate CloudKit sync
+        let assistantMessages = messages.filter { $0.role == .assistant }
+        for message in assistantMessages {
+            if abs(message.lastModified.timeIntervalSinceNow) < 30 { // Modified within last 30 seconds
+                CloudKitSyncManager.shared.forceSyncLocalChange(for: message, changeType: .update)
+            }
+        }
 
         // MARK: - 生成标题和图标
 

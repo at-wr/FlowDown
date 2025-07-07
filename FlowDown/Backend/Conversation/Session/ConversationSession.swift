@@ -20,7 +20,7 @@ final class ConversationSession: Identifiable {
 
     private(set) var messages: [Message] = []
     private(set) var attachments: [Message.ID: [Attachment]] = [:]
-    private var thinkingDurationTimer: [Message.ID: Timer] = [:]
+    var thinkingDurationTimer: [Message.ID: Timer] = [:]
 
     private lazy var messagesSubject: CurrentValueSubject<
         ([Message], Bool),
@@ -97,6 +97,13 @@ final class ConversationSession: Identifiable {
         message.creation = .now
         messages.append(message)
         if role == .user { userDidSendMessageSubject.send(message) }
+
+        // Force sync user messages immediately to prevent debouncing issues
+        if role == .user {
+            CloudKitSyncManager.shared.forceSyncLocalChange(for: message, changeType: .create)
+        } else {
+            CloudKitSyncManager.shared.syncLocalChange(for: message, changeType: .create)
+        }
         return message
     }
 
@@ -112,9 +119,10 @@ final class ConversationSession: Identifiable {
 
     func addAttachments(_ attachments: [RichEditorView.Object.Attachment], to message: Message) {
         let messageID = message.id
-        let mapped = attachments.map { attachment in
+        let mapped = attachments.map { attachment -> Attachment in
             let newAttachment = sdb.attachmentMake(with: messageID)
             updateAttachment(newAttachment, using: attachment)
+            CloudKitSyncManager.shared.syncLocalChange(for: newAttachment, changeType: .create)
             return newAttachment
         }
         sdb.attachmentsUpdate(mapped)
@@ -138,6 +146,9 @@ final class ConversationSession: Identifiable {
             updateAttachment(current, using: attachment)
         }
         sdb.attachmentsUpdate(currentAttachments)
+        for attachment in currentAttachments {
+            CloudKitSyncManager.shared.syncLocalChange(for: attachment, changeType: .update)
+        }
     }
 
     func notifyMessagesDidChange(scrolling: Bool = true) {
@@ -168,7 +179,25 @@ final class ConversationSession: Identifiable {
 
     @inlinable
     func save() {
-        sdb.insertOrReplace(messages: messages)
+        // Ensure conversation has cloudId for dependency resolution
+        if let conversation = sdb.conversationWith(identifier: id) {
+            if conversation.cloudId.isEmpty {
+                // Assign cloudId if missing and sync conversation first
+                sdb.conversationEdit(identifier: id) { conv in
+                    if conv.cloudId.isEmpty {
+                        conv.cloudId = UUID().uuidString
+                    }
+                }
+                if let updatedConv = sdb.conversationWith(identifier: id) {
+                    CloudKitSyncManager.shared.forceSyncLocalChange(for: updatedConv, changeType: .update)
+                }
+            }
+        }
+
+        // Save all messages using sync-aware method to ensure CloudKit notifications
+        for message in messages {
+            sdb.insertOrReplaceMessage(message, notifySync: true)
+        }
     }
 
     @inlinable
@@ -184,6 +213,9 @@ final class ConversationSession: Identifiable {
     // 删除这条消息
     func delete(messageIdentifier: Message.ID) {
         cancelCurrentTask { [self] in
+            if let message = message(for: messageIdentifier) {
+                CloudKitSyncManager.shared.syncLocalChange(for: message, changeType: .delete)
+            }
             sdb.deleteSupplementMessage(nextTo: messageIdentifier)
             sdb.delete(messageIdentifier: messageIdentifier)
             refreshContentsFromDatabase()
@@ -193,6 +225,12 @@ final class ConversationSession: Identifiable {
     // 删除自这条消息以后的全部数据
     func deleteCurrentAndAfter(messageIdentifier: Message.ID, completion: @escaping () -> Void = {}) {
         cancelCurrentTask { [self] in
+            if let message = message(for: messageIdentifier) {
+                let messagesToDelete = messages.filter { $0.id > messageIdentifier && $0.creation >= message.creation && $0.conversationId == message.conversationId }
+                for msgToDelete in messagesToDelete {
+                    CloudKitSyncManager.shared.syncLocalChange(for: msgToDelete, changeType: .delete)
+                }
+            }
             sdb.deleteAfter(messageIdentifier: messageIdentifier)
             delete(messageIdentifier: messageIdentifier)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -213,7 +251,7 @@ final class ConversationSession: Identifiable {
             if message.document.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 message.document = String(localized: "Empty message.")
             }
-            sdb.insertOrReplace(messages: [message])
+            sdb.insertOrReplaceMessage(message, notifySync: true)
             notifyMessagesDidChange()
         }
     }
@@ -223,7 +261,7 @@ final class ConversationSession: Identifiable {
             return
         }
         message.reasoningContent = reasoningContent
-        sdb.insertOrReplace(messages: [message])
+        sdb.insertOrReplaceMessage(message, notifySync: true)
         notifyMessagesDidChange()
     }
 
@@ -332,5 +370,24 @@ final class ConversationSession: Identifiable {
                 inputObject: editorObject
             ) {}
         }
+    }
+}
+
+// MARK: - Session Activity Tracking
+
+extension ConversationSession {
+    /// Indicates if this session is currently active (has running tasks or is displayed in UI)
+    var isActive: Bool {
+        ConversationSessionManager.shared.isActive(for: id)
+    }
+
+    /// Indicates if this session is currently executing inference
+    var isExecuting: Bool {
+        currentTask != nil
+    }
+
+    /// Indicates if this session has active timers
+    var hasActiveTimers: Bool {
+        !thinkingDurationTimer.isEmpty
     }
 }

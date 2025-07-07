@@ -23,6 +23,7 @@ public extension Storage {
 
     func conversationMake() -> Conversation {
         let object = Conversation()
+        object.cloudId = UUID().uuidString
         object.isAutoIncrement = true
         try? db.insert([object], intoTable: Conversation.table)
         object.isAutoIncrement = false
@@ -31,6 +32,7 @@ public extension Storage {
     }
 
     func conversationUpdate(object: Conversation) {
+        object.lastModified = Date()
         try? db.insertOrReplace(
             [object],
             intoTable: Conversation.table
@@ -51,6 +53,7 @@ public extension Storage {
         )
         guard var object = read else { return }
         block(&object)
+        object.lastModified = Date()
         try? db.insertOrReplace(
             [object],
             intoTable: Conversation.table
@@ -107,6 +110,7 @@ public extension Storage {
         guard let conv else { throw NSError() }
 
         conv.isAutoIncrement = true
+        conv.cloudId = UUID().uuidString // cloudId for duplicated conversation
         customize(conv)
         try db.insert([conv], intoTable: Conversation.table)
         conv.isAutoIncrement = false
@@ -129,6 +133,7 @@ public extension Storage {
         for message in messages {
             message.isAutoIncrement = true
             message.conversationId = newIdentifier
+            message.cloudId = UUID().uuidString // New cloudId for duplicated message
             oldMessageIdentifierSet.insert(message.id)
             try db.insert(message, intoTable: Message.table)
             message.isAutoIncrement = false
@@ -140,6 +145,7 @@ public extension Storage {
             for attachment in attachments {
                 attachment.isAutoIncrement = true
                 attachment.messageId = message.lastInsertedRowID
+                attachment.cloudId = UUID().uuidString // New cloudId for duplicated attachment
                 oldAttachmentIdentifierSet.insert(attachment.id)
                 try db.insert(attachment, intoTable: Attachment.table)
                 attachment.isAutoIncrement = false
