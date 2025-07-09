@@ -271,13 +271,15 @@ extension CloudKitSyncManager {
 
         let shouldUpdate: Bool
 
+        let this = self
+
         if let remoteDeviceId {
             if remoteDeviceId == deviceId {
                 logger.warning("Received record from same device in conflict resolution - this should have been filtered earlier")
                 shouldUpdate = false
             } else if abs(timeDifference) < 5.0 {
                 shouldUpdate = remoteDeviceId < deviceId
-                logger.info("Close timestamps (\(timeDifference)s) with device ID (\(remoteDeviceId)), using device ID comparison. Local device: \(deviceId), accepting remote: \(shouldUpdate)")
+                logger.info("Close timestamps (\(timeDifference)s) with device ID (\(remoteDeviceId)), using device ID comparison. Local device: \(this.deviceId), accepting remote: \(shouldUpdate)")
             } else if timeDifference > 0 {
                 shouldUpdate = true
                 logger.info("Remote version from device \(remoteDeviceId) is newer by \(timeDifference)s, accepting update")

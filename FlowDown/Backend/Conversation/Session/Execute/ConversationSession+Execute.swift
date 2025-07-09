@@ -263,7 +263,7 @@ extension ConversationSession {
         await requestUpdate(view: currentMessageListView)
 
         print("[*] inference done")
-        
+
         // Force sync all assistant messages created during inference
         // This bypasses debouncing to ensure immediate CloudKit sync
         let assistantMessages = messages.filter { $0.role == .assistant }

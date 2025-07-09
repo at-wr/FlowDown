@@ -313,12 +313,14 @@ final class CloudKitSyncManager: ObservableObject, @unchecked Sendable {
         let messages = storage.listMessages()
         let pendingUploads = storage.pendingUploadList()
 
+        let this = self // make swift format happy
+
         logger.info("Sync Statistics:")
         logger.info("- Conversations: \(conversations.count)")
         logger.info("- Messages: \(messages.count)")
         logger.info("- Pending uploads: \(pendingUploads.count)")
-        logger.info("- Last sync: \(lastSyncDate?.formatted() ?? "Never")")
-        logger.info("- Status: \(String(describing: syncStatus))")
+        logger.info("- Last sync: \(this.lastSyncDate?.formatted() ?? "Never")")
+        logger.info("- Status: \(String(describing: this.syncStatus))")
     }
 
     public func forceResyncRecentMessages() {
@@ -924,7 +926,9 @@ extension CloudKitSyncManager {
             }
         }
 
-        logger.info("Loaded zone change tokens for \(zoneChangeTokens.count) zones")
+        let this = self
+
+        logger.info("Loaded zone change tokens for \(this.zoneChangeTokens.count) zones")
     }
 
     func scheduleRetryWithExponentialBackoff(operation: String, error: Error) async {

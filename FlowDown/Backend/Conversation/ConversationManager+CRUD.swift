@@ -16,18 +16,25 @@ extension ConversationManager {
     private static var scanWorkItem: DispatchWorkItem?
     private static let scanDebounceInterval: TimeInterval = 0.1
 
+    private func doScan() {
+        let items: [Conversation] = sdb.conversationList()
+        print("[+] scanned \(items.count) conversations")
+
+        var value: OrderedDictionary<Conversation.ID, Conversation> = .init()
+        for conversation in items {
+            value[conversation.id] = conversation
+        }
+
+        DispatchQueue.main.async {
+            self.conversations.send(value)
+        }
+    }
+
     func scanAll() {
         Self.scanWorkItem?.cancel()
         Self.scanWorkItem = DispatchWorkItem { [weak self] in
-            guard let self else { return }
-
             DispatchQueue.global(qos: .userInitiated).async {
-                let items: [Conversation] = sdb.conversationList()
-                print("[+] scanned \(items.count) conversations")
-
-                DispatchQueue.main.async {
-                    self.conversations.send(items)
-                }
+                self?.doScan()
             }
         }
 
@@ -60,7 +67,7 @@ extension ConversationManager {
         guard let object = sdb.conversationWith(identifier: tempObject.id) else {
             preconditionFailure()
         }
-        
+
         CloudKitSyncManager.shared.syncLocalChange(for: object, changeType: .create)
 
         Task {
@@ -159,7 +166,7 @@ extension ConversationManager {
 
     func eraseAll() {
         for conv in conversations.value {
-            CloudKitSyncManager.shared.syncLocalChange(for: conv, changeType: .delete)
+            CloudKitSyncManager.shared.syncLocalChange(for: conv as! (any Syncable), changeType: .delete)
         }
         sdb.conversationsDrop()
         clearRichEditorObject()
