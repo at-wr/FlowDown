@@ -6,19 +6,20 @@
 //
 
 import Foundation
+import Storage
 
-public struct SearchResult {
-    public let conversation: Conversation
-    public let matchType: MatchType
-    public let matchedText: String
-    public let messagePreview: String?
+struct ConversationSearchResult {
+    let conversation: Conversation
+    let matchType: MatchType
+    let matchedText: String
+    let messagePreview: String?
 
-    public enum MatchType {
+    enum MatchType {
         case title
         case message
     }
 
-    public init(
+    init(
         conversation: Conversation,
         matchType: MatchType,
         matchedText: String,

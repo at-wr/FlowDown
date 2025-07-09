@@ -9,12 +9,12 @@ import Foundation
 import Storage
 
 extension ConversationManager {
-    func searchConversations(query: String) -> [SearchResult] {
+    func searchConversations(query: String) -> [ConversationSearchResult] {
         guard !query.isEmpty else { return [] }
 
         let lowercasedQuery = query.lowercased()
-        var messageResults: [SearchResult] = []
-        var titleResults: [SearchResult] = []
+        var messageResults: [ConversationSearchResult] = []
+        var titleResults: [ConversationSearchResult] = []
         var addedConversations = Set<Conversation.ID>()
 
         for conversation in conversations.value.values {
@@ -24,7 +24,7 @@ extension ConversationManager {
             for message in messages {
                 if message.document.lowercased().contains(lowercasedQuery) {
                     let preview = extractPreview(from: message.document, around: lowercasedQuery)
-                    messageResults.append(SearchResult(
+                    messageResults.append(ConversationSearchResult(
                         conversation: conversation,
                         matchType: .message,
                         matchedText: query,
@@ -37,7 +37,7 @@ extension ConversationManager {
             }
 
             if !foundInMessage, conversation.title.lowercased().contains(lowercasedQuery) {
-                titleResults.append(SearchResult(
+                titleResults.append(ConversationSearchResult(
                     conversation: conversation,
                     matchType: .title,
                     matchedText: conversation.title

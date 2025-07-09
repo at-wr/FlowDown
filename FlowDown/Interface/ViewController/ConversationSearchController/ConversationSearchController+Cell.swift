@@ -8,7 +8,7 @@
 import Storage
 import UIKit
 
-extension ConversationSearchController.ContentController {
+extension SearchContentController {
     class SearchResultCell: UITableViewCell {
         let iconView = UIImageView()
         let titleLabel = UILabel()
@@ -89,7 +89,7 @@ extension ConversationSearchController.ContentController {
             }
         }
 
-        func configure(with result: SearchResult, searchTerm: String, isHighlighted: Bool = false) {
+        func configure(with result: ConversationSearchResult, searchTerm: String, isHighlighted: Bool = false) {
             iconView.image = result.conversation.interfaceImage
 
             if result.matchType == .title, !searchTerm.isEmpty {

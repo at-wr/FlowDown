@@ -253,6 +253,7 @@ class MCPEditorController: StackScrollController {
         ) { $0.bottom /= 2 }
         let testAction = ConfigurableActionView { [weak self] _ in
             guard let self else { return }
+            _ = self
             // TODO: Testing method.
         }
         testAction.configure(icon: UIImage(systemName: "wand.and.stars"))
