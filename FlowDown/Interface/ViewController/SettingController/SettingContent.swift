@@ -229,22 +229,32 @@ extension SettingController.SettingContent {
 
 extension SettingController.SettingContent {
     class SettingFooterView: UIView {
-        let versionLabel = UILabel().with {
+        let versionButton = UIButton(type: .system).with {
             let version = String(AnchorVersion.version)
             let build = String(AnchorVersion.build)
-            $0.text = String(format: String(localized: "Version %@ (%@)"), version, build)
+            let text = String(format: String(localized: "Version %@ (%@)"), version, build)
             #if DEBUG
-                $0.text? += " 🐦"
+                let finalText = text + " 🐦"
+            #else
+                let finalText = text
             #endif
-            $0.font = .preferredFont(forTextStyle: .footnote)
-            $0.textColor = .secondaryLabel
-            $0.textAlignment = .center
+            $0.setTitle(finalText, for: .normal)
+            $0.titleLabel?.font = .preferredFont(forTextStyle: .footnote)
+            $0.setTitleColor(.secondaryLabel, for: .normal)
+            $0.contentHorizontalAlignment = .center
         }
 
         init() {
             super.init(frame: .zero)
-            addSubview(versionLabel)
-            versionLabel.snp.makeConstraints { make in
+            addSubview(versionButton)
+            let action = UIAction { _ in
+                UpdateManager.shared.anchor(self)
+                UpdateManager.shared.performUpdateCheckFromUI()
+            }
+            versionButton.addAction(action, for: .touchUpInside)
+
+            addSubview(versionButton)
+            versionButton.snp.makeConstraints { make in
                 make.edges.equalToSuperview()
             }
         }

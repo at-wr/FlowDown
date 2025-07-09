@@ -281,21 +281,7 @@ open class RemoteChatClient: ChatService {
         guard let dic else { return nil }
 
         let errorDic = dic["error"] as? [String: Any]
-        guard let errorDic else {
-            if let text = String(data: input, encoding: .utf8) {
-                logger.error("Invalid response content: \(text)")
-                return NSError(domain: "RemoteChatClient", code: -1, userInfo: [
-                    NSLocalizedDescriptionKey: text,
-                ])
-            } else {
-                return NSError(
-                    domain: "RemoteChatClient", code: -1,
-                    userInfo: [NSLocalizedDescriptionKey: String(
-                        localized: "Invalid response content", bundle: .module
-                    )]
-                )
-            }
-        }
+        guard let errorDic else { return nil }
 
         var message = errorDic["message"] as? String
             ?? String(localized: "Unknown Error", bundle: .module)

@@ -375,8 +375,12 @@ class MainController: UIViewController {
         }
     }
 
-    @objc func expendSidebar() {
+    @objc func openSidebar() {
         view.doWithAnimation { self.isSidebarCollapsed = false }
+    }
+
+    @objc func searchConversationsFromMenu(_: Any? = nil) {
+        sidebar.searchButton.delegate?.searchButtonDidTap()
     }
 }
 

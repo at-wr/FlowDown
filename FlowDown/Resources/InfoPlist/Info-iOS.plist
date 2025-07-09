@@ -7,6 +7,8 @@
 		<string>wiki.qaq.flowdown.compaction</string>
 		<string>wiki.qaq.flowdown.cloudsync</string>
 	</array>
+	<key>UIDesignRequiresCompatibility</key>
+	<true/>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleAllowMixedLocalizations</key>

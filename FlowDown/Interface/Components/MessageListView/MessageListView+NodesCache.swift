@@ -12,16 +12,10 @@ extension MessageListView {
     final class MarkdownPackageCache {
         typealias MessageIdentifier = Message.ID
 
-        struct MarkdownPackage {
-            let blocks: [MarkdownBlockNode]
-            let mathContent: [Int: String]
-            let renderedContent: RenderContext
-        }
-
-        private var cache: [MessageIdentifier: MarkdownPackage] = [:]
+        private var cache: [MessageIdentifier: MarkdownTextView.PreprocessContent] = [:]
         private var messageDidChanged: [MessageIdentifier: Int] = [:]
 
-        func package(for message: MessageRepresentation, theme: MarkdownTheme) -> MarkdownPackage {
+        func package(for message: MessageRepresentation, theme: MarkdownTheme) -> MarkdownTextView.PreprocessContent {
             let id = message.id
             let cachedContent = messageDidChanged[id]
             if cachedContent == message.content.hashValue {
@@ -33,40 +27,13 @@ extension MessageListView {
             return updateCache(for: message, theme: theme)
         }
 
-        private func updateCache(for message: MessageRepresentation, theme: MarkdownTheme) -> MarkdownPackage {
+        private func updateCache(for message: MessageRepresentation, theme: MarkdownTheme) -> MarkdownTextView.PreprocessContent {
             let content = message.content
             let result = MarkdownParser().parse(content)
-            let rendered = MarkdownTextView.prepareMathContent(
-                result.mathContext,
-                theme: theme
-            )
-            let package = MarkdownPackage(
-                blocks: result.document,
-                mathContent: result.mathContext,
-                renderedContent: rendered
-            )
+            let package = MarkdownTextView.PreprocessContent(parserResult: result, theme: theme)
             cache[message.id] = package
             messageDidChanged[message.id] = message.content.hashValue
             return package
         }
-    }
-}
-
-extension MarkdownTextView {
-    static func prepareMathContent(_ content: [Int: String], theme: MarkdownTheme) -> RenderContext {
-        var renderedContexts: RenderContext = [:]
-        for (key, value) in content {
-            let image = MathRenderer.renderToImage(
-                latex: value,
-                fontSize: theme.fonts.body.pointSize,
-                textColor: theme.colors.body
-            )?.withRenderingMode(.alwaysTemplate)
-            let renderedContext = RenderedItem(
-                image: image,
-                text: value
-            )
-            renderedContexts["math://\(key)"] = renderedContext
-        }
-        return renderedContexts
     }
 }

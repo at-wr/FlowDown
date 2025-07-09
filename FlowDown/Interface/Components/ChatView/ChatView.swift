@@ -224,8 +224,7 @@ class ChatView: UIView {
     }
 
     private func removeUnusedListViews() {
-        let conversations: [Conversation] = sdb.conversationList()
-        let conversationIDs: [Conversation.ID] = conversations.map(\.id)
+        let conversationIDs: Set<Conversation.ID> = .init(ConversationManager.shared.conversations.value.keys)
         let unusedKeys = messageListViews.keys.filter { !conversationIDs.contains($0) }
 
         for key in unusedKeys {
@@ -362,7 +361,7 @@ extension ChatView {
                     menuButton.present(menu: .init(children: [
                         convMenu,
                         UIAction(title: String(localized: "Show Sidebar"), image: UIImage(systemName: "sidebar.left")) { _ in
-                            mainController.expendSidebar()
+                            mainController.openSidebar()
                         },
                     ]))
                 } else {

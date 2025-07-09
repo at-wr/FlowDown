@@ -93,6 +93,16 @@
         }
       }
     },
+    "A new version %@ is available. Would you like to download it?" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新版本 %@ 已准备就绪，你要前往下载吗？"
+          }
+        }
+      }
+    },
     "A tool model is required for browsing." : {
       "localizations" : {
         "zh-Hans" : {
@@ -672,6 +682,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "检查"
+          }
+        }
+      }
+    },
+    "Check for Updates..." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "检查更新"
+          }
+        }
+      }
+    },
+    "Check the spelling or try a new search." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请检查拼写或重新尝试搜索。"
+          }
+        }
+      }
+    },
+    "Checking for Updates" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "检查更新中"
           }
         }
       }
@@ -2336,6 +2376,16 @@
         }
       }
     },
+    "Failed to parse release information." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法获取版本信息。"
+          }
+        }
+      }
+    },
     "Failed to query calendar: %@" : {
       "localizations" : {
         "zh-Hans" : {
@@ -2432,6 +2482,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "过滤器选项"
+          }
+        }
+      }
+    },
+    "Find conversations by title or message" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查找对话标题或消息内容"
           }
         }
       }
@@ -3763,6 +3823,26 @@
         }
       }
     },
+    "No Results" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无结果"
+          }
+        }
+      }
+    },
+    "No Update Available" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无可用更新"
+          }
+        }
+      }
+    },
     "No web search results." : {
       "localizations" : {
         "zh-Hans" : {
@@ -4427,16 +4507,6 @@
         }
       }
     },
-    "Redo Message" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "重做消息"
-          }
-        }
-      }
-    },
     "Refreshed" : {
       "localizations" : {
         "zh-Hans" : {
@@ -4627,6 +4697,16 @@
         }
       }
     },
+    "Search Conversations" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜索对话"
+          }
+        }
+      }
+    },
     "Search Emoji" : {
       "localizations" : {
         "zh-Hans" : {
@@ -4673,6 +4753,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "搜索策略"
+          }
+        }
+      }
+    },
+    "Search…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜索..."
           }
         }
       }
@@ -5573,16 +5663,6 @@
         }
       }
     },
-    "This will delete all messages after this one and fill the content into the editor." : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "这将会删除当前及以后的全部消息，并将此消息填回编辑器。"
-          }
-        }
-      }
-    },
     "This will extract your requests from the current conversation using %@ and save it as a template for later use. This may take some time." : {
       "localizations" : {
         "zh-Hans" : {
@@ -6061,6 +6141,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "更新全部模型"
+          }
+        }
+      }
+    },
+    "Update Available" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新可用"
           }
         }
       }
@@ -6643,6 +6733,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "雅虎搜索"
+          }
+        }
+      }
+    },
+    "Yesterday" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "昨天"
           }
         }
       }

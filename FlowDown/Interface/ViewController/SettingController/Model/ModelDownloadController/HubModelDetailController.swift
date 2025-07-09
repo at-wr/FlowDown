@@ -59,26 +59,14 @@ class HubModelDetailController: StackScrollController {
     }
 
     func setMarkdownContent(_ markdown: String) {
-        let nodes = MarkdownParser().parse(markdown)
+        let result = MarkdownParser().parse(markdown)
         var theme = MarkdownTheme()
         theme.align(to: UIFont.preferredFont(forTextStyle: .subheadline).pointSize)
-        var renderedContexts: [String: RenderedItem] = [:]
-        for (key, value) in nodes.mathContext {
-            let image = MathRenderer.renderToImage(
-                latex: value,
-                fontSize: theme.fonts.body.pointSize,
-                textColor: theme.colors.body
-            )?.withRenderingMode(.alwaysTemplate)
-            let renderedContext = RenderedItem(
-                image: image,
-                text: value
-            )
-            renderedContexts["math://\(key)"] = renderedContext
-        }
+        let package = MarkdownTextView.PreprocessContent(parserResult: result, theme: theme)
         DispatchQueue.main.async {
             let markdownView = MarkdownTextView()
             markdownView.theme = theme
-            markdownView.setMarkdown(nodes.document, renderedContent: renderedContexts)
+            markdownView.setMarkdownManually(package)
             markdownView.alpha = 0
             markdownView.codePreviewHandler = { [weak self] language, code in
                 let viewer = CodeEditorController(language: language, text: code.string)

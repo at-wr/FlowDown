@@ -7,6 +7,7 @@
 
 import Combine
 import Foundation
+import OrderedCollections
 import RichEditor
 import Storage
 
@@ -16,26 +17,20 @@ extension ConversationManager {
     private static let scanDebounceInterval: TimeInterval = 0.1
 
     func scanAll() {
-        // Cancel any pending scan operations
         Self.scanWorkItem?.cancel()
-
-        // Create new debounced scan operation
         Self.scanWorkItem = DispatchWorkItem { [weak self] in
             guard let self else { return }
 
-            // Perform database operation on background queue
             DispatchQueue.global(qos: .userInitiated).async {
                 let items: [Conversation] = sdb.conversationList()
                 print("[+] scanned \(items.count) conversations")
 
-                // Update UI on main queue
                 DispatchQueue.main.async {
                     self.conversations.send(items)
                 }
             }
         }
 
-        // Schedule the debounced operation
         DispatchQueue.main.asyncAfter(
             deadline: .now() + Self.scanDebounceInterval,
             execute: Self.scanWorkItem!
@@ -43,10 +38,10 @@ extension ConversationManager {
     }
 
     func initialConversation() -> Conversation {
-        if let firstItem = conversations.value.first,
+        if let firstItem = conversations.value.values.first,
            message(within: firstItem.id).isEmpty
         {
-            print("[+] using first empty conversation with index: \(firstItem.id)")
+            print("[+] using first empty conversation with id: \(firstItem.id)")
             return firstItem
         }
         print("[+] creating a new conversation")

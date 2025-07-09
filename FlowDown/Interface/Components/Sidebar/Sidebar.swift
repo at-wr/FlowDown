@@ -64,8 +64,7 @@ class Sidebar: UIView {
             make.right.bottom.equalToSuperview()
         }
 
-        // TODO: IMPL
-        searchButton.isHidden = true
+        searchButton.delegate = self
 
         conversationListView.delegate = self
         addSubview(conversationListView)
