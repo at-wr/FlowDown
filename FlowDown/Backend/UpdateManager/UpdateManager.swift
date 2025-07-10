@@ -14,6 +14,11 @@ class UpdateManager: NSObject {
     private let currentChannel: DistributionChannel
     private weak var anchorView: UIView?
 
+    var canCheckForUpdates: Bool {
+        // Check if the current channel supports update checking
+        [.fromGitHub].contains(currentChannel)
+    }
+
     override private init() {
         #if targetEnvironment(macCatalyst)
             if let receiptUrl = Bundle.main.appStoreReceiptURL,

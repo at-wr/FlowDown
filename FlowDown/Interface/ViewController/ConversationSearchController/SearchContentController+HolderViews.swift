@@ -26,13 +26,13 @@ extension SearchContentController {
 
         let titleLabel = UILabel()
         titleLabel.text = String(localized: "No Results")
-        titleLabel.font = .preferredFont(forTextStyle: .headline)
+        titleLabel.font = .preferredFont(forTextStyle: .body)
         titleLabel.textColor = .label
         titleLabel.textAlignment = .center
 
         let subtitleLabel = UILabel()
         subtitleLabel.text = String(localized: "Check the spelling or try a new search.")
-        subtitleLabel.font = .preferredFont(forTextStyle: .subheadline)
+        subtitleLabel.font = .preferredFont(forTextStyle: .body)
         subtitleLabel.textColor = .secondaryLabel
         subtitleLabel.textAlignment = .center
         subtitleLabel.numberOfLines = 0
@@ -75,13 +75,13 @@ extension SearchContentController {
 
         let titleLabel = UILabel()
         titleLabel.text = String(localized: "Search Conversations")
-        titleLabel.font = .preferredFont(forTextStyle: .headline)
+        titleLabel.font = .preferredFont(forTextStyle: .body)
         titleLabel.textColor = .label
         titleLabel.textAlignment = .center
 
         let subtitleLabel = UILabel()
         subtitleLabel.text = String(localized: "Find conversations by title or message")
-        subtitleLabel.font = .preferredFont(forTextStyle: .subheadline)
+        subtitleLabel.font = .preferredFont(forTextStyle: .body)
         subtitleLabel.textColor = .secondaryLabel
         subtitleLabel.textAlignment = .center
         subtitleLabel.numberOfLines = 0

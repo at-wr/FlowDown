@@ -16,8 +16,10 @@ class SearchContentController: UIViewController {
     let noResultsView = UIView()
     let emptyStateView = UIView()
 
+    private var currentSearchToken: UUID = .init()
     var searchResults: [ConversationSearchResult] = [] {
         didSet {
+            currentSearchToken = .init()
             updateNoResultsView()
             tableView.reloadData()
         }
@@ -95,7 +97,6 @@ class SearchContentController: UIViewController {
         }
     }
 
-    private var currentSearchToken: UUID = .init()
     private let searchQueue = DispatchQueue(
         label: "SearchContentController.searchQueue",
         qos: .userInitiated
@@ -109,7 +110,7 @@ class SearchContentController: UIViewController {
             guard let self, currentSearchToken == token else { return }
             let searchResults = ConversationManager.shared.searchConversations(query: query)
             DispatchQueue.main.async { [weak self] in
-                guard let self else { return }
+                guard let self, currentSearchToken == token else { return }
                 self.searchResults = searchResults
             }
         }

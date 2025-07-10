@@ -37,7 +37,7 @@ extension SearchContentController {
             titleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
             titleLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
 
-            dateLabel.font = .preferredFont(forTextStyle: .caption2)
+            dateLabel.font = .preferredFont(forTextStyle: .body)
             dateLabel.textColor = .secondaryLabel
             dateLabel.setContentHuggingPriority(.required, for: .horizontal)
             dateLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
@@ -50,23 +50,24 @@ extension SearchContentController {
             titleDateStackView.addArrangedSubview(titleLabel)
             titleDateStackView.addArrangedSubview(dateLabel)
 
-            subtitleLabel.font = .preferredFont(forTextStyle: .caption1)
+            subtitleLabel.font = .preferredFont(forTextStyle: .body)
             subtitleLabel.textColor = .secondaryLabel
             subtitleLabel.numberOfLines = 2
 
             textStackView.axis = .vertical
-            textStackView.spacing = 4
+            textStackView.spacing = 8
             textStackView.addArrangedSubview(titleDateStackView)
 
             stackView.axis = .horizontal
-            stackView.spacing = 12
+            stackView.spacing = 8
             stackView.alignment = .center
             stackView.addArrangedSubview(iconView)
             stackView.addArrangedSubview(textStackView)
+            textStackView.addArrangedSubview(subtitleLabel)
 
             contentView.addSubview(stackView)
             stackView.snp.makeConstraints { make in
-                make.edges.equalToSuperview().inset(UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16))
+                make.edges.equalToSuperview().inset(16)
             }
         }
 
@@ -82,11 +83,6 @@ extension SearchContentController {
             titleLabel.attributedText = nil
             titleLabel.text = nil
             subtitleLabel.attributedText = nil
-
-            if textStackView.arrangedSubviews.contains(subtitleLabel) {
-                textStackView.removeArrangedSubview(subtitleLabel)
-                subtitleLabel.removeFromSuperview()
-            }
         }
 
         func configure(with result: ConversationSearchResult, searchTerm: String, isHighlighted: Bool = false) {
@@ -96,7 +92,7 @@ extension SearchContentController {
                 titleLabel.attributedText = NSAttributedString.highlightedString(
                     text: result.conversation.title,
                     searchTerm: searchTerm,
-                    baseAttributes: [.font: UIFont.preferredFont(forTextStyle: .body)],
+                    baseAttributes: [.font: UIFont.preferredFont(forTextStyle: .body).bold],
                     highlightAttributes: [.backgroundColor: UIColor.systemYellow.withAlphaComponent(0.3)]
                 )
             } else {
@@ -106,9 +102,7 @@ extension SearchContentController {
             dateLabel.text = formatDate(result.conversation.creation)
 
             if result.matchType == .message, let preview = result.messagePreview {
-                if textStackView.arrangedSubviews.count == 1 {
-                    textStackView.addArrangedSubview(subtitleLabel)
-                }
+                subtitleLabel.isHidden = false
 
                 let cleanedPreview = preview
                     .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -118,14 +112,13 @@ extension SearchContentController {
                     text: cleanedPreview,
                     searchTerm: searchTerm,
                     baseAttributes: [
-                        .font: UIFont.preferredFont(forTextStyle: .caption1),
+                        .font: UIFont.preferredFont(forTextStyle: .body),
                         .foregroundColor: UIColor.secondaryLabel,
                     ],
                     highlightAttributes: [.backgroundColor: UIColor.systemYellow.withAlphaComponent(0.3)]
                 )
             } else {
-                textStackView.removeArrangedSubview(subtitleLabel)
-                subtitleLabel.removeFromSuperview()
+                subtitleLabel.isHidden = true
             }
 
             updateHighlightState(isHighlighted)

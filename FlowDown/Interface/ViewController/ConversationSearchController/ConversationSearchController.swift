@@ -16,8 +16,8 @@ import UIKit
         init(callback: @escaping SearchCallback) {
             super.init(
                 rootViewController: NavigationController(callback: callback),
-                preferredWidth: 660,
-                preferredHeight: 420
+                preferredWidth: 750,
+                preferredHeight: 550
             )
             shouldDismissWhenTappedAround = true
             shouldDismissWhenEscapeKeyPressed = true

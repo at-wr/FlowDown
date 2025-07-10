@@ -52,27 +52,29 @@ extension AppDelegate {
             ),
             atEndOfMenu: .file
         )
-        builder.insertSibling(
-            UIMenu(
-                title: "",
-                options: .displayInline,
-                children: [
-                    UIKeyCommand(
-                        title: String(localized: "Check for Updates..."),
-                        action: #selector(checkForUpdatesFromMenu(_:)),
-                        input: "u",
-                        modifierFlags: [.command, .shift]
-                    ),
-                    UIKeyCommand(
-                        title: String(localized: "Settings..."),
-                        action: #selector(openSettingsFromMenu(_:)),
-                        input: ",",
-                        modifierFlags: .command
-                    ),
-                ]
-            ),
-            afterMenu: .preferences
-        )
+        if UpdateManager.shared.canCheckForUpdates {
+            builder.insertSibling(
+                UIMenu(
+                    title: "",
+                    options: .displayInline,
+                    children: [
+                        UIKeyCommand(
+                            title: String(localized: "Check for Updates..."),
+                            action: #selector(checkForUpdatesFromMenu(_:)),
+                            input: "u",
+                            modifierFlags: [.command, .shift]
+                        ),
+                        UIKeyCommand(
+                            title: String(localized: "Settings..."),
+                            action: #selector(openSettingsFromMenu(_:)),
+                            input: ",",
+                            modifierFlags: .command
+                        ),
+                    ]
+                ),
+                afterMenu: .preferences
+            )
+        }
         builder.insertChild(
             UIMenu(
                 title: "",

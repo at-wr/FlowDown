@@ -68,27 +68,6 @@ class HubModelDetailController: StackScrollController {
             markdownView.theme = theme
             markdownView.setMarkdownManually(package)
             markdownView.alpha = 0
-            markdownView.codePreviewHandler = { [weak self] language, code in
-                let viewer = CodeEditorController(language: language, text: code.string)
-                #if targetEnvironment(macCatalyst)
-                    let nav = UINavigationController(rootViewController: viewer)
-                    nav.view.backgroundColor = .background
-                    let holder = AlertBaseController(
-                        rootViewController: nav,
-                        preferredWidth: 555,
-                        preferredHeight: 555
-                    )
-                    holder.shouldDismissWhenTappedAround = true
-                    holder.shouldDismissWhenEscapeKeyPressed = true
-                #else
-                    let holder = UINavigationController(rootViewController: viewer)
-                    holder.preferredContentSize = .init(width: 555, height: 555 - holder.navigationBar.frame.height)
-                    holder.modalTransitionStyle = .coverVertical
-                    holder.modalPresentationStyle = .formSheet
-                    holder.view.backgroundColor = .background
-                #endif
-                self?.present(holder, animated: true)
-            }
             self.view.doWithAnimation {
                 self.markdownContainerView.addSubview(markdownView)
                 markdownView.snp.makeConstraints { make in
@@ -100,6 +79,7 @@ class HubModelDetailController: StackScrollController {
                 UIView.animate(withDuration: 0.3) {
                     markdownView.alpha = 1
                 }
+                markdownView.setNeedsLayout()
             }
         }
     }
@@ -133,7 +113,7 @@ class HubModelDetailController: StackScrollController {
         card.label.text = model.id
         stackView.addArrangedSubviewWithMargin(card)
         card.snp.makeConstraints { make in
-            make.height.equalTo(card.snp.width).multipliedBy(0.35)
+            make.height.equalTo(128)
         }
 
         stackView.addArrangedSubview(SeparatorView())
@@ -165,6 +145,11 @@ class HubModelDetailController: StackScrollController {
         updateBarItems()
     }
 
+    let downloadButtonIndicator = UIActivityIndicatorView(style: .medium)
+    var downloadSize: UInt64? = nil {
+        didSet { updateBarItems() }
+    }
+
     func updateBarItems() {
         if ModelManager.shared.localModelExists(repoIdentifier: model.id) {
             navigationItem.rightBarButtonItem = .init(
@@ -174,12 +159,43 @@ class HubModelDetailController: StackScrollController {
                 action: #selector(download)
             )
         } else {
-            navigationItem.rightBarButtonItem = .init(
-                title: String(localized: "Download"),
-                style: .plain,
-                target: self,
-                action: #selector(download)
-            )
+            if let downloadSize {
+                if downloadSize > 0 {
+                    let byteText = ByteCountFormatter.string(
+                        fromByteCount: Int64(downloadSize),
+                        countStyle: .file
+                    )
+                    navigationItem.rightBarButtonItem = .init(
+                        title: String(localized: "Download (\(byteText))"),
+                        style: .plain,
+                        target: self,
+                        action: #selector(download)
+                    )
+                } else {
+                    navigationItem.rightBarButtonItem = .init(
+                        title: String(localized: "Download (Unknown Size)"),
+                        style: .plain,
+                        target: self,
+                        action: #selector(download)
+                    )
+                }
+            } else {
+                navigationItem.rightBarButtonItem = .init(customView: downloadButtonIndicator)
+                downloadButtonIndicator.startAnimating()
+                Task.detached {
+                    await self.checkDownloadSize()
+                }
+            }
+        }
+    }
+
+    func checkDownloadSize() async {
+        do {
+            let size = try await ModelManager.shared.checkModelSizeFromHugginFace(identifier: model.id)
+            await MainActor.run { downloadSize = size }
+        } catch {
+            print("[!] failed to check model size: \(error)")
+            await MainActor.run { downloadSize = 0 }
         }
     }
 
@@ -235,14 +251,6 @@ extension HubModelDetailController {
     class ModelCardView: UIView {
         let background = UIView().with {
             $0.backgroundColor = .accent
-            let img = UIImageView()
-            img.contentMode = .scaleAspectFill
-            img.image = .circularTexture
-            img.alpha = 0.05
-            $0.addSubview(img)
-            img.snp.makeConstraints { make in
-                make.edges.equalToSuperview()
-            }
         }
 
         let icon = UIImageView().with {
@@ -281,10 +289,10 @@ extension HubModelDetailController {
 
             addSubview(stackView)
             stackView.snp.makeConstraints { make in
-                make.left.right.equalToSuperview().inset(20)
+                make.left.right.equalToSuperview().inset(16)
                 make.center.equalToSuperview()
-                make.top.greaterThanOrEqualToSuperview().inset(20)
-                make.bottom.lessThanOrEqualToSuperview().inset(20)
+                make.top.greaterThanOrEqualToSuperview().inset(16)
+                make.bottom.lessThanOrEqualToSuperview().inset(16)
             }
 
             stackView.addArrangedSubview(icon)
