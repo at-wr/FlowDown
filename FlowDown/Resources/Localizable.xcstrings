@@ -656,6 +656,16 @@
         }
       }
     },
+    "Change the branding name display in the app. Leave it empty to use FlowDown." : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "修改软件的品牌名称。留空以使用浮望。"
+          }
+        }
+      }
+    },
     "Chat" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1718,6 +1728,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "编辑额外报头"
+          }
+        }
+      }
+    },
+    "Edit Branding Name" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "编辑品牌名"
           }
         }
       }
@@ -4833,6 +4853,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在打招呼..."
+          }
+        }
+      }
+    },
+    "Set" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设定"
           }
         }
       }

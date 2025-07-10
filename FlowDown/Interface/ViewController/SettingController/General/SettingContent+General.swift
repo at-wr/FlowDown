@@ -51,6 +51,9 @@ extension SettingController.SettingContent {
             ) { $0.bottom /= 2 }
             stackView.addArrangedSubview(SeparatorView())
 
+            stackView.addArrangedSubviewWithMargin(BrandingLabel.configurableObject.createView())
+            stackView.addArrangedSubview(SeparatorView())
+
             stackView.addArrangedSubviewWithMargin(UIUserInterfaceStyle.configurableObject.createView())
             stackView.addArrangedSubview(SeparatorView())
 

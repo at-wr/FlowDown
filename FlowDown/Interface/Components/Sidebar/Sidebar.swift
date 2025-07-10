@@ -9,7 +9,7 @@ import Storage
 import UIKit
 
 class Sidebar: UIView {
-    let brandingLabel = UILabel()
+    let brandingLabel = SidebarBrandingLabel()
     let newChatButton = NewChatButton()
     let searchButton = SearchControllerOpenButton()
     let settingButton = SettingButton()
@@ -37,12 +37,6 @@ class Sidebar: UIView {
         addSubview(settingButton)
         addSubview(searchButton)
 
-        brandingLabel.text = String(localized: "FlowDown")
-        #if DEBUG
-            brandingLabel.text? += " 🐦"
-        #endif
-        brandingLabel.font = .preferredFont(forTextStyle: .title3).bold
-        brandingLabel.textColor = .label
         brandingLabel.snp.makeConstraints { make in
             make.left.top.equalToSuperview()
             make.right.equalTo(newChatButton).offset(-spacing)
