@@ -6146,16 +6146,6 @@
         }
       }
     },
-    "Tools Settings" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "工具设置"
-          }
-        }
-      }
-    },
     "Travel & Places" : {
       "comment" : "Emoji Category",
       "localizations" : {

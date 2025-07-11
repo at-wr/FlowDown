@@ -243,7 +243,7 @@ extension ChatView: RichEditorView.Delegate {
                 let settingController = SettingController()
                 self?.parentViewController?.present(settingController, animated: true)
             },
-            UIAction(title: String(localized: "Tools Settings")) { [weak self] _ in
+            UIAction(title: String(localized: "Tools Configuration")) { [weak self] _ in
                 SettingController.setNextEntryPage(.tools)
                 let settingController = SettingController()
                 self?.parentViewController?.present(settingController, animated: true)
