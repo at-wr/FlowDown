@@ -47,6 +47,7 @@ extension ConversationSession {
                         }
                     }
                 }
+
                 await requestUpdate(view: currentMessageListView)
                 await doInfereExecute(
                     modelID: modelID,
@@ -96,20 +97,7 @@ extension ConversationSession {
 
         // prevent screen lock
         await MainActor.run { UIApplication.shared.isIdleTimerDisabled = true }
-
         saveIfNeeded(object)
-
-        var tools: [ModelTool] = []
-        if modelWillExecuteTools {
-            tools.append(contentsOf: ModelToolsManager.shared.enabledTools)
-            if modelWillGoSearchWeb {
-                // enabled by default
-                // tools.append(MTWebSearchTool())
-            } else {
-                // but if user disabled web search here, remove it from available tools
-                tools = tools.filter { !($0 is MTWebSearchTool) }
-            }
-        }
 
         // MARK: - 上下文转译到请求体 不包含当前编辑框中的附件
 
@@ -124,8 +112,7 @@ extension ConversationSession {
                 &requestMessages,
                 modelName,
                 modelWillExecuteTools,
-                // keep it nil otherwise upstream will complaint about it
-                tools.isEmpty ? nil : tools.map(\.definition),
+                modelWillGoSearchWeb,
                 modelContextLength,
                 modelID
             )
@@ -170,7 +157,7 @@ extension ConversationSession {
         _ requestMessages: inout [ChatRequestBody.Message],
         _ modelName: String,
         _ modelWillExecuteTools: Bool,
-        _ tools: [ChatRequestBody.Tool]?,
+        _ modelWillGoSearchWeb: Bool,
         _ modelContextLength: Int,
         _ modelID: ModelManager.ModelIdentifier
     ) async throws {
@@ -225,12 +212,34 @@ extension ConversationSession {
 
         // MARK: - 添加最新的系统提示
 
-        injectNewSystemCommand(&requestMessages, modelName, modelWillExecuteTools, object)
+        await injectNewSystemCommand(&requestMessages, modelName, modelWillExecuteTools, object)
+
+        // MARK: - 构建工具调用列表
+
+        let servers = MCPService.shared.servers.value
+        let shouldPrepareMCP = servers.filter(\.isEnabled).count > 0
+        if shouldPrepareMCP {
+            await currentMessageListView.loading(with: String(localized: "Preparing Model Context"))
+            await MCPService.shared.prepareForConversation()
+        }
+
+        var tools: [ModelTool] = []
+        if modelWillExecuteTools {
+            await tools.append(contentsOf: ModelToolsManager.shared.getEnabledToolsIncludeMCP())
+            if !modelWillGoSearchWeb {
+                // remove this tool if not enabled
+                tools = tools.filter { !($0 is MTWebSearchTool) }
+            }
+        }
+
+        let toolsDefinitions = tools.isEmpty ? nil : tools.map(\.definition)
+
+        await currentMessageListView.stopLoading()
 
         // MARK: - 删除超出上下文长度限制的消息
 
         try checkCancellation()
-        if try removeOutOfContextContents(&requestMessages, tools, modelContextLength) {
+        if try removeOutOfContextContents(&requestMessages, toolsDefinitions, modelContextLength) {
             let hint = appendNewMessage(role: .hint)
             hint.document = String(
                 localized: "Some messages have been removed to fit the model context length.")
@@ -252,7 +261,7 @@ extension ConversationSession {
                 currentMessageListView,
                 modelID,
                 &requestMessages,
-                tools,
+                toolsDefinitions,
                 modelWillExecuteTools,
                 linkedContents: linkedContents,
                 requestLinkContentIndex: requestLinkContentIndex

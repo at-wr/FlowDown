@@ -84,7 +84,9 @@ extension RichEditorView.Object {
 extension RichEditorView {
     func resetValues() {
         inputEditor.set(text: "")
-        inputEditor.endEditing(true)
+        #if !targetEnvironment(macCatalyst)
+            inputEditor.endEditing(true)
+        #endif
         attachmentsBar.attachmetns.removeAll()
         controlPanel.close()
         inputEditor.isControlPanelOpened = false

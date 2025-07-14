@@ -91,6 +91,7 @@ extension SettingController {
         case modelManagement
         case modelEditor(model: ModelManager.ModelIdentifier)
         case tools
+        case mcp
         case dataControl
         case permissionList
         case contactUs

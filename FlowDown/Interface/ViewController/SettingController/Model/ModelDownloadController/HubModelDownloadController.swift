@@ -31,9 +31,6 @@ class HubModelDownloadController: UIViewController {
     @BareCodableStorage(key: "ModelDownloadController.anchorToTextGenerationModels", defaultValue: true)
     var anchorToTextGenerationModels { didSet { updateDataSource() } }
 
-    @BareCodableStorage(key: "ModelDownloadController.disableWarnings", defaultValue: false)
-    var disableWarnings
-
     init() {
         tableView = .init(frame: .zero, style: .plain)
         dataSource = .init(tableView: tableView) { tableView, indexPath, itemIdentifier in
@@ -97,22 +94,21 @@ class HubModelDownloadController: UIViewController {
         super.viewDidAppear(animated)
         guard isFirstAppear else { return }
         isFirstAppear = false
-        if !disableWarnings {
-            let warning = AlertViewController(
-                title: String(localized: "Warning"),
-                message: String(localized: "Features provided by this page are suitable for users who have experience deploying large language models. Running models that exceed the resources of the device may cause the application or system to crash. Please proceed with caution.")
-            ) { context in
-                context.addAction(title: String(localized: "Cancel")) {
-                    context.dispose { [weak self] in
-                        self?.navigationController?.popViewController(animated: true)
-                    }
-                }
-                context.addAction(title: String(localized: "OK"), attribute: .dangerous) {
-                    context.dispose {}
+        let warning = AlertViewController(
+            title: String(localized: "Warning"),
+            message: String(localized: "Features provided by this page are suitable for users who have experience deploying large language models. Running models that exceed the resources of the device may cause the application or system to crash. Please proceed with caution.")
+                + "\n\n" + String(localized: "Ready to dive in? Select a model to see its size and details.")
+        ) { context in
+            context.addAction(title: String(localized: "Cancel")) {
+                context.dispose { [weak self] in
+                    self?.navigationController?.popViewController(animated: true)
                 }
             }
-            present(warning, animated: true)
+            context.addAction(title: String(localized: "OK"), attribute: .dangerous) {
+                context.dispose {}
+            }
         }
+        present(warning, animated: true)
     }
 
     func updateDataSource() {
@@ -152,19 +148,6 @@ class HubModelDownloadController: UIViewController {
                             state: anchorToVerifiedAuthorMLX ? .on : .off
                         ) { [weak self] _ in
                             self?.anchorToVerifiedAuthorMLX.toggle()
-                        },
-                    ]
-                ),
-                UIMenu(
-                    title: String(localized: "Advance"),
-                    options: [.displayInline],
-                    children: [
-                        UIAction(
-                            title: String(localized: "Disable Warnings"),
-                            image: UIImage(systemName: "exclamationmark.triangle"),
-                            state: disableWarnings ? .on : .off
-                        ) { [weak self] _ in
-                            self?.disableWarnings.toggle()
                         },
                     ]
                 ),

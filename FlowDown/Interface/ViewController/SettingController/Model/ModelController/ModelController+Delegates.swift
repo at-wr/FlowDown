@@ -46,14 +46,21 @@ extension SettingController.SettingContent.ModelController: UITableViewDelegate 
         return UISwipeActionsConfiguration(actions: [delete])
     }
 
-    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point _: CGPoint) -> UIContextMenuConfiguration? {
+    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         guard let itemIdentifier = dataSource.itemIdentifier(for: indexPath) else {
             return nil
         }
         var actions: [UIMenuElement] = []
+
         switch itemIdentifier.type {
         case .local: break
         case .cloud:
+            actions.append(UIAction(
+                title: String(localized: "Export Model"),
+                image: UIImage(systemName: "square.and.arrow.up")
+            ) { _ in
+                self.exportModel(itemIdentifier)
+            })
             actions.append(UIAction(
                 title: String(localized: "Duplicate")
             ) { _ in
@@ -95,7 +102,8 @@ extension SettingController.SettingContent.ModelController: UITableViewDelegate 
         })
         #if targetEnvironment(macCatalyst)
             let cell = tableView.cellForRow(at: indexPath)
-            cell?.present(menu: .init(children: actions))
+            let point = tableView.convert(point, to: cell)
+            cell?.present(menu: .init(children: actions), anchorPoint: point)
             return nil
         #else
             return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
@@ -149,6 +157,42 @@ extension SettingController.SettingContent.ModelController: UITableViewDragDeleg
         } catch {
             print("[-] failed to encode model: \(error)")
             return []
+        }
+    }
+}
+
+extension SettingController.SettingContent.ModelController {
+    func exportModel(_ itemIdentifier: ModelViewModel) {
+        guard itemIdentifier.type == .cloud,
+              let model = ModelManager.shared.cloudModel(identifier: itemIdentifier.identifier) else { return }
+
+        let tempFileDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("DisposableResources")
+            .appendingPathComponent(UUID().uuidString)
+        let modelName = model.modelDisplayName
+        let tempFile = tempFileDir
+            .appendingPathComponent("Export-\(modelName.sanitizedFileName)")
+            .appendingPathExtension("fdmodel")
+        try? FileManager.default.createDirectory(at: tempFileDir, withIntermediateDirectories: true)
+        FileManager.default.createFile(atPath: tempFile.path, contents: nil)
+
+        do {
+            let encoder = PropertyListEncoder()
+            encoder.outputFormat = .xml
+            let data = try encoder.encode(model)
+            try data.write(to: tempFile, options: .atomic)
+
+            let exporter = FileExporterHelper()
+            exporter.targetFileURL = tempFile
+            exporter.referencedView = view
+            exporter.deleteAfterComplete = true
+            exporter.exportTitle = String(localized: "Export Model")
+            exporter.completion = {
+                try? FileManager.default.removeItem(at: tempFileDir)
+            }
+            exporter.execute(presentingViewController: self)
+        } catch {
+            print("[-] failed to export model: \(error)")
         }
     }
 }

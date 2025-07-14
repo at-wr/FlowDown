@@ -121,6 +121,12 @@ extension ChatView: RichEditorView.Delegate {
             currentMessageListView: currentMessageListView,
             inputObject: object
         ) {}
+
+        #if targetEnvironment(macCatalyst)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.editor.focus()
+            }
+        #endif
     }
 
     func onRichEditorError(_ error: String) {
@@ -227,6 +233,22 @@ extension ChatView: RichEditorView.Delegate {
                 self?.parentViewController?.present(settingController, animated: true)
             },
         ].compactMap(\.self))
+        anchor.present(menu: menu)
+    }
+
+    func onRichEditorShowAlternativeToolsMenu(anchor: UIView) {
+        let menu = UIMenu(title: String(localized: "Shortcuts"), children: [
+            UIAction(title: String(localized: "MCP Settings")) { [weak self] _ in
+                SettingController.setNextEntryPage(.mcp)
+                let settingController = SettingController()
+                self?.parentViewController?.present(settingController, animated: true)
+            },
+            UIAction(title: String(localized: "Tools Settings")) { [weak self] _ in
+                SettingController.setNextEntryPage(.tools)
+                let settingController = SettingController()
+                self?.parentViewController?.present(settingController, animated: true)
+            },
+        ])
         anchor.present(menu: menu)
     }
 

@@ -1,7 +1,11 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Connection error: %lld" : {
+
+    },
     "Invalid Content-Type for SSE: %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -12,6 +16,7 @@
       }
     },
     "Invalid HTTP response status code: %lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -33,6 +38,7 @@
       }
     },
     "Missing Content-Type header in SSE response" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -67,6 +73,9 @@
           }
         }
       }
+    },
+    "Unable to connect to the server." : {
+
     },
     "Unknown Error" : {
       "localizations" : {

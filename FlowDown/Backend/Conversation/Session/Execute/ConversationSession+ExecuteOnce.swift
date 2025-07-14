@@ -107,7 +107,7 @@ extension ConversationSession {
         await currentMessageListView.loading(with: String(localized: "Utilizing tool call"))
 
         for request in pendingToolCalls {
-            guard let tool = ModelToolsManager.shared.tool(for: request) else {
+            guard let tool = await ModelToolsManager.shared.findTool(for: request) else {
                 throw NSError(
                     domain: "Tool Error",
                     code: -1,
@@ -118,8 +118,8 @@ extension ConversationSession {
             }
             await currentMessageListView.loading(with: String(localized: "Utilizing tool: \(tool.interfaceName)"))
 
-            // 等待一秒以避免过快执行任务用户还没看到内容
-            try await Task.sleep(nanoseconds: 1 * 1_000_000_000)
+            // 等待一小会以避免过快执行任务用户还没看到内容
+            try await Task.sleep(nanoseconds: 1 * 500_000_000)
 
             // 检查是否是网络搜索工具，如果是则直接执行
             if let tool = tool as? MTWebSearchTool {
@@ -147,10 +147,18 @@ extension ConversationSession {
                     ))
                 }
                 await currentMessageListView.loading()
-                requestMessages.append(.tool(
-                    content: .text(webAttachments.map(\.textRepresentation).joined(separator: "\n")),
-                    toolCallID: request.id.uuidString
-                ))
+
+                if webAttachments.isEmpty {
+                    requestMessages.append(.tool(
+                        content: .text(String(localized: "Web search returned no results.")),
+                        toolCallID: request.id.uuidString
+                    ))
+                } else {
+                    requestMessages.append(.tool(
+                        content: .text(webAttachments.map(\.textRepresentation).joined(separator: "\n")),
+                        toolCallID: request.id.uuidString
+                    ))
+                }
             } else {
                 // 标准工具
                 guard let result = ModelToolsManager.shared.perform(

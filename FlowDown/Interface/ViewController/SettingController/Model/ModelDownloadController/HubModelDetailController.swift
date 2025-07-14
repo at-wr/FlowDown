@@ -29,8 +29,7 @@ class HubModelDetailController: StackScrollController {
     let indicator = UIActivityIndicatorView(style: .medium)
     var task: Task<Void, Error>?
 
-    @BareCodableStorage(key: "ModelDownloadController.disableWarnings", defaultValue: false)
-    var disableWarnings
+    let disableWarnings = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -64,16 +63,20 @@ class HubModelDetailController: StackScrollController {
         theme.align(to: UIFont.preferredFont(forTextStyle: .subheadline).pointSize)
         let package = MarkdownTextView.PreprocessContent(parserResult: result, theme: theme)
         DispatchQueue.main.async {
-            let markdownView = MarkdownTextView()
-            markdownView.theme = theme
-            markdownView.setMarkdownManually(package)
-            markdownView.alpha = 0
+            let markdownView = MarkdownTextView().with {
+                $0.theme = theme
+                $0.bindContentOffset(from: self.scrollView)
+                $0.setMarkdownManually(package)
+                $0.alpha = 0
+            }
+            self.markdownContainerView.addSubview(markdownView)
+            markdownView.snp.makeConstraints { make in
+                make.edges.equalToSuperview()
+            }
             self.view.doWithAnimation {
-                self.markdownContainerView.addSubview(markdownView)
-                markdownView.snp.makeConstraints { make in
-                    make.edges.equalToSuperview()
-                }
                 self.requiresUpdateHeight = true
+                self.view.setNeedsLayout()
+                self.view.layoutIfNeeded()
             } completion: {
                 self.indicator.stopAnimating()
                 UIView.animate(withDuration: 0.3) {
@@ -89,17 +92,16 @@ class HubModelDetailController: StackScrollController {
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
         let markdownView = markdownContainerView.subviews.first as? MarkdownTextView
-        if let markdownView {
-            let layoutWidth = markdownContainerView.bounds.width
-            if requiresUpdateHeight || layoutWidth != requiresMatchingWidth {
-                let size = markdownView.boundingSize(for: markdownContainerView.bounds.width)
-                markdownView.snp.remakeConstraints { make in
-                    make.edges.equalToSuperview()
-                    make.height.equalTo(size.height).priority(.required)
-                }
-                requiresUpdateHeight = false
-                requiresMatchingWidth = layoutWidth
+        guard let markdownView else { return }
+        let layoutWidth = markdownContainerView.bounds.width
+        if requiresUpdateHeight || layoutWidth != requiresMatchingWidth {
+            let size = markdownView.boundingSize(for: markdownContainerView.bounds.width)
+            markdownView.snp.remakeConstraints { make in
+                make.edges.equalToSuperview()
+                make.height.equalTo(size.height).priority(.required)
             }
+            requiresUpdateHeight = false
+            requiresMatchingWidth = layoutWidth
         }
     }
 
@@ -211,12 +213,14 @@ class HubModelDetailController: StackScrollController {
             return
         }
 
+        let sizeText = ByteCountFormatter.string(fromByteCount: Int64(downloadSize ?? 128 * 1024 * 1024 * 1024), countStyle: .file)
+
         if disableWarnings {
             present(downloadController, animated: true)
         } else if model.id.lowercased().hasPrefix("mlx-community/") {
             let alert = AlertViewController(
                 title: String(localized: "Download Model"),
-                message: String(localized: "We are not responsible for the model you are about to download. If we are unable to load this model, the app may crash. Do you want to continue?")
+                message: String(localized: "We are not responsible for the model you are about to download. If we are unable to load this model, the app may crash. Do you want to continue?") + "\n\n" + String(localized: "Estimated download size: \(sizeText)")
             ) { context in
                 context.addAction(title: String(localized: "Cancel")) {
                     context.dispose()
@@ -231,7 +235,7 @@ class HubModelDetailController: StackScrollController {
         } else {
             let alert = AlertViewController(
                 title: String(localized: "Unverified Model"),
-                message: String(localized: "Even if you download this model, it may not work or even crash the app. Do you still want to download this model?")
+                message: String(localized: "Even if you download this model, it may not work or even crash the app. Do you still want to download this model?") + "\n\n" + String(localized: "Estimated download size: \(sizeText)")
             ) { context in
                 context.addAction(title: String(localized: "Cancel")) {
                     context.dispose()

@@ -84,6 +84,7 @@ extension MainController: Sidebar.Delegate {
         #if !targetEnvironment(macCatalyst)
             DispatchQueue.main.async {
                 guard self.presentedViewController == nil else { return }
+                guard !self.allowSidebarPersistence else { return }
                 let tableView = self.sidebar.conversationListView.tableView
                 guard !tableView.isEditing else { return }
                 self.view.doWithAnimation { self.isSidebarCollapsed = true }

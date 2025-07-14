@@ -12,5 +12,6 @@ extension QuickSettingBar {
         func quickSettingBarOnValueChagned()
         func quickSettingBarPickModel()
         func quickSettingBarShowAlternativeModelMenu()
+        func quickSettingBarShowAlternativeToolsMenu()
     }
 }

@@ -7,6 +7,7 @@
 
 import Combine
 import ConfigurableKit
+import Storage
 import UIKit
 
 @objc(SceneDelegate)
@@ -51,6 +52,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 importModel(from: url)
             case "fdtemplate":
                 importTemplate(from: url)
+            case "fdmcp":
+                importMCPServer(from: url)
             default: break // dont know how
             }
         case "flowdown":
@@ -87,6 +90,31 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         } catch {
             print("[*] failed to import template from URL: \(url), error: \(error)")
             mainController.queueBootMessage(text: String(localized: "Failed to import template: \(error.localizedDescription)"))
+        }
+    }
+
+    private func importMCPServer(from url: URL) {
+        _ = url.startAccessingSecurityScopedResource()
+        defer { url.stopAccessingSecurityScopedResource() }
+        try? FileManager.default.startDownloadingUbiquitousItem(at: url)
+        do {
+            let data = try Data(contentsOf: url)
+            let decoder = PropertyListDecoder()
+            let server = try decoder.decode(ModelContextServer.self, from: data)
+            DispatchQueue.main.async {
+                MCPService.shared.insert(server)
+            }
+            let serverName = if let serverUrl = URL(string: server.endpoint), let host = serverUrl.host {
+                host
+            } else if !server.name.isEmpty {
+                server.name
+            } else {
+                "MCP Server"
+            }
+            mainController.queueBootMessage(text: String(localized: "Successfully imported MCP server \(serverName)"))
+        } catch {
+            print("[*] failed to import MCP server from URL: \(url), error: \(error)")
+            mainController.queueBootMessage(text: String(localized: "Failed to import MCP server: \(error.localizedDescription)"))
         }
     }
 

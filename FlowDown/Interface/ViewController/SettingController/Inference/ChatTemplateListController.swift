@@ -13,6 +13,9 @@ import Storage
 import UIKit
 import UniformTypeIdentifiers
 
+private let fdTemplateUTType = UTType(filenameExtension: "fdtemplate") ?? .data
+private let fdTemplateTypeIdentifier = fdTemplateUTType.identifier
+
 class ChatTemplateListController: UIViewController {
     private var cancellables = Set<AnyCancellable>()
 
@@ -124,7 +127,7 @@ class ChatTemplateListController: UIViewController {
 
     func presentDocumentPicker() {
         let picker = UIDocumentPickerViewController(forOpeningContentTypes: [
-            UTType(filenameExtension: "fdtemplate") ?? .data,
+            fdTemplateUTType,
         ])
         picker.delegate = self
         picker.allowsMultipleSelection = true
@@ -301,9 +304,8 @@ extension ChatTemplateListController: UITableViewDragDelegate, UITableViewDropDe
         do {
             let encoder = PropertyListEncoder()
             let data = try encoder.encode(template)
-            let typeIdentifier = UTType(filenameExtension: "fdtemplate")?.identifier ?? "com.flowdown.template"
             itemProvider.registerDataRepresentation(
-                forTypeIdentifier: typeIdentifier,
+                forTypeIdentifier: fdTemplateTypeIdentifier,
                 visibility: .all
             ) { completion in
                 completion(data, nil)
@@ -352,7 +354,7 @@ extension ChatTemplateListController: UITableViewDragDelegate, UITableViewDropDe
     func tableView(_: UITableView, dropSessionDidUpdate session: UIDropSession, withDestinationIndexPath _: IndexPath?) -> UITableViewDropProposal {
         if session.localDragSession != nil {
             return UITableViewDropProposal(operation: .move, intent: .insertAtDestinationIndexPath)
-        } else if session.hasItemsConforming(toTypeIdentifiers: [UTType(filenameExtension: "fdtemplate")?.identifier ?? "wiki.qaq.fdtemplate"]) {
+        } else if session.hasItemsConforming(toTypeIdentifiers: [fdTemplateTypeIdentifier]) {
             return UITableViewDropProposal(operation: .copy, intent: .insertAtDestinationIndexPath)
         }
         return UITableViewDropProposal(operation: .cancel)
@@ -369,8 +371,8 @@ extension ChatTemplateListController: UITableViewDragDelegate, UITableViewDropDe
                 coordinator.drop(item.dragItem, toRowAt: destinationIndexPath)
             } else {
                 let itemProvider = item.dragItem.itemProvider
-                if itemProvider.hasItemConformingToTypeIdentifier(UTType(filenameExtension: "fdtemplate")?.identifier ?? "wiki.qaq.fdtemplate") {
-                    itemProvider.loadDataRepresentation(forTypeIdentifier: UTType(filenameExtension: "fdtemplate")?.identifier ?? "wiki.qaq.fdtemplate") { data, error in
+                if itemProvider.hasItemConformingToTypeIdentifier(fdTemplateTypeIdentifier) {
+                    itemProvider.loadDataRepresentation(forTypeIdentifier: fdTemplateTypeIdentifier) { data, error in
                         guard let data, error == nil else { return }
 
                         do {

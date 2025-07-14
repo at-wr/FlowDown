@@ -52,6 +52,7 @@ extension AppDelegate {
             ),
             atEndOfMenu: .file
         )
+
         if UpdateManager.shared.canCheckForUpdates {
             builder.insertSibling(
                 UIMenu(
@@ -64,17 +65,28 @@ extension AppDelegate {
                             input: "u",
                             modifierFlags: [.command, .shift]
                         ),
-                        UIKeyCommand(
-                            title: String(localized: "Settings..."),
-                            action: #selector(openSettingsFromMenu(_:)),
-                            input: ",",
-                            modifierFlags: .command
-                        ),
                     ]
                 ),
                 afterMenu: .preferences
             )
         }
+
+        builder.insertSibling(
+            UIMenu(
+                title: "",
+                options: .displayInline,
+                children: [
+                    UIKeyCommand(
+                        title: String(localized: "Settings..."),
+                        action: #selector(openSettingsFromMenu(_:)),
+                        input: ",",
+                        modifierFlags: .command
+                    ),
+                ]
+            ),
+            afterMenu: .preferences
+        )
+
         builder.insertChild(
             UIMenu(
                 title: "",

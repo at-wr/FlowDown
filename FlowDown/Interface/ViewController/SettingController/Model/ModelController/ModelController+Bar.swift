@@ -35,35 +35,6 @@ extension SettingController.SettingContent.ModelController {
                 }
             ),
             UIAction(
-                title: String(localized: "Fetch"),
-                image: .init(systemName: "network")
-            ) { [weak self] _ in
-                guard let self else { return }
-                Indicator.progress(
-                    title: String(localized: "Fetching Model"),
-                    controller: self
-                ) { completionHandler in
-                    ModelManager.shared.requestModelProfileFromServer { result in
-                        completionHandler {
-                            switch result {
-                            case let .success(profile):
-                                _ = ModelManager.shared.newCloudModel(profile: profile)
-                            case let .failure(error):
-                                let errorAlert = AlertViewController(
-                                    title: String(localized: "Failed"),
-                                    message: error.localizedDescription
-                                ) { context in
-                                    context.addAction(title: String(localized: "OK"), attribute: .dangerous) {
-                                        context.dispose()
-                                    }
-                                }
-                                self.navigationController?.present(errorAlert, animated: true)
-                            }
-                        }
-                    }
-                }
-            },
-            UIAction(
                 title: String(localized: "Empty Model"),
                 image: .init(systemName: "square.dashed")
             ) { [weak self] _ in

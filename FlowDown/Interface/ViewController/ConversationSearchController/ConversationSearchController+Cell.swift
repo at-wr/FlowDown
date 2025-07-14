@@ -22,7 +22,6 @@ extension SearchContentController {
             super.init(style: style, reuseIdentifier: reuseIdentifier)
 
             backgroundColor = .clear
-            accessoryType = .disclosureIndicator
 
             iconView.contentMode = .scaleAspectFit
             iconView.layer.cornerRadius = 6

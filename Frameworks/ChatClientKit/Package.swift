@@ -8,6 +8,7 @@ let package = Package(
     defaultLocalization: "en",
     platforms: [
         .iOS(.v16),
+        .macCatalyst(.v16),
         .macOS("13.3"),
     ],
     products: [
@@ -22,6 +23,7 @@ let package = Package(
         .target(
             name: "ChatClientKit",
             dependencies: [
+                "ServerEvent",
                 .product(name: "MLX", package: "mlx-swift"),
                 .product(name: "MLXLLM", package: "mlx-swift-examples"),
                 .product(name: "MLXVLM", package: "mlx-swift-examples"),
@@ -29,5 +31,6 @@ let package = Package(
                 .product(name: "EventSource", package: "EventSource"),
             ]
         ),
+        .target(name: "ServerEvent"),
     ]
 )

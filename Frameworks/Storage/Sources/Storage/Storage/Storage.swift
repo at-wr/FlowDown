@@ -38,9 +38,9 @@ public class Storage {
         try db.create(table: Attachment.table, of: Attachment.self)
         try db.create(table: Message.table, of: Message.self)
         try db.create(table: Conversation.table, of: Conversation.self)
-        try db.create(table: ModelContextClient.table, of: ModelContextClient.self)
         try db.create(table: PendingUpload.table, of: PendingUpload.self)
         try db.create(table: DeferredRecord.table, of: DeferredRecord.self)
+        try db.create(table: ModelContextServer.table, of: ModelContextServer.self)
     }
 
     public func reset() {
@@ -49,9 +49,9 @@ public class Storage {
             try handler.drop(table: Attachment.table)
             try handler.drop(table: Message.table)
             try handler.drop(table: Conversation.table)
-            try handler.drop(table: ModelContextClient.table)
             try handler.drop(table: PendingUpload.table)
             try handler.drop(table: DeferredRecord.table)
+            try handler.drop(table: ModelContextServer.table)
             return ()
         }
         db.blockade()

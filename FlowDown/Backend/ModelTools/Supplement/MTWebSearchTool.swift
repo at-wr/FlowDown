@@ -102,11 +102,6 @@ class MTWebSearchTool: ModelTool {
 
         if webSearchResults.isEmpty {
             await session.requestUpdate(view: messageListView)
-            throw NSError(
-                domain: "MTWebSearchTool",
-                code: -1,
-                userInfo: [NSLocalizedDescriptionKey: "No web search results found"]
-            )
         }
 
         return webSearchResults

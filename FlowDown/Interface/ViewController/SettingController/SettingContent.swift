@@ -37,12 +37,6 @@ extension SettingController {
                 explain: String(localized: "Configure tool settings, choose search engine for internet searches."),
                 ephemeralAnnotation: .page { ToolsController() }
             ),
-//            .init(
-//                icon: "cpu.fill",
-//                title: String(localized: "Model Context Protocol"),
-//                explain: String(localized: "Manage Model Context Protocol Servers."),
-//                ephemeralAnnotation: .page { MCPController() }
-//            ),
             .init(
                 icon: "lock.shield",
                 title: String(localized: "Data Control"),
@@ -148,6 +142,8 @@ extension SettingController.EntryPage {
             return SettingController.SettingContent.ModelController()
         case .tools:
             return SettingController.SettingContent.ToolsController()
+        case .mcp:
+            return SettingController.SettingContent.MCPController()
         case .dataControl:
             return SettingController.SettingContent.DataControlController()
         case .permissionList:

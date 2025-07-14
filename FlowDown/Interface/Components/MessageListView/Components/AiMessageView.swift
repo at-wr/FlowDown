@@ -44,5 +44,6 @@ final class AiMessageView: MessageListRowView {
     override func layoutSubviews() {
         super.layoutSubviews()
         markdownView.frame = contentView.bounds
+        markdownView.bindContentOffset(from: nearestScrollView)
     }
 }

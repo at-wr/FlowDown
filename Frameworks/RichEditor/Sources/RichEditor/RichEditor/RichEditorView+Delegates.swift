@@ -274,6 +274,10 @@ extension RichEditorView: QuickSettingBar.Delegate {
         delegate?.onRichEditorShowAlternativeModelMenu(anchor: quickSettingBar.modelPicker)
     }
 
+    func quickSettingBarShowAlternativeToolsMenu() {
+        delegate?.onRichEditorShowAlternativeToolsMenu(anchor: quickSettingBar.toolsToggle)
+    }
+
     func updateModelInfo(postUpdate: Bool = true) {
         let newModel = delegate?.onRichEditorRequestCurrentModelName()
         withAnimation { self.quickSettingBar.setModelName(newModel) }

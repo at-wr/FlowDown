@@ -98,23 +98,15 @@ final class ToolHintView: MessageListRowView {
             symbolView.image = image
             symbolView.tintColor = .systemRed
         }
+        setNeedsLayout()
     }
 
     private func updateContent() {
-        let useDefaultTitle: Bool
-        if let text {
-            let isMultiline = text.lines().count > 1
-            isClickable = isMultiline
-            useDefaultTitle = text.isEmpty || isMultiline
-        } else {
-            isClickable = false
-            useDefaultTitle = true
-        }
-        if useDefaultTitle {
-            label.text = .init(localized: "Tool call for \(toolName) completed.")
-        } else {
-            label.text = text ?? .init()
-        }
+        isClickable = true
+        label.text = .init(localized: "Tool call for \(toolName) completed.")
+        label.invalidateIntrinsicContentSize()
+        label.sizeToFit()
+        setNeedsLayout()
     }
 
     @objc
