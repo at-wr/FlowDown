@@ -9,57 +9,54 @@ import Foundation
 import WCDBSwift
 
 public extension Storage {
-    func modelContextClientList() -> [ModelContextClient] {
+    func modelContextServerList() -> [ModelContextServer] {
         (
             try? db.getObjects(
-                fromTable: ModelContextClient.table,
+                fromTable: ModelContextServer.table,
                 orderBy: [
-                    ModelContextClient.Properties.id.order(.ascending),
+                    ModelContextServer.Properties.id.order(.ascending),
                 ]
             )
         ) ?? []
     }
 
-    func modelContextClientMake() -> ModelContextClient {
-        let object = ModelContextClient()
-        object.isAutoIncrement = true
-        try? db.insert([object], intoTable: ModelContextClient.table)
-        object.isAutoIncrement = false
-        object.id = object.lastInsertedRowID
+    func modelContextServerMake() -> ModelContextServer {
+        let object = ModelContextServer()
+        try? db.insert([object], intoTable: ModelContextServer.table)
         return object
     }
 
-    func modelContextClientPut(object: ModelContextClient) {
+    func modelContextServerPut(object: ModelContextServer) {
         try? db.insertOrReplace(
             [object],
-            intoTable: ModelContextClient.table
+            intoTable: ModelContextServer.table
         )
     }
 
-    func modelContextClientWith(_ identifier: ModelContextClient.ID) -> ModelContextClient? {
+    func modelContextServerWith(_ identifier: ModelContextServer.ID) -> ModelContextServer? {
         try? db.getObject(
-            fromTable: ModelContextClient.table,
-            where: ModelContextClient.Properties.id == identifier
+            fromTable: ModelContextServer.table,
+            where: ModelContextServer.Properties.id == identifier
         )
     }
 
-    func modelContextClientEdit(identifier: ModelContextClient.ID, _ block: @escaping (inout ModelContextClient) -> Void) {
-        let read: ModelContextClient? = try? db.getObject(
-            fromTable: ModelContextClient.table,
-            where: ModelContextClient.Properties.id == identifier
+    func modelContextServerEdit(identifier: ModelContextServer.ID, _ block: @escaping (inout ModelContextServer) -> Void) {
+        let read: ModelContextServer? = try? db.getObject(
+            fromTable: ModelContextServer.table,
+            where: ModelContextServer.Properties.id == identifier
         )
         guard var object = read else { return }
         block(&object)
         try? db.insertOrReplace(
             [object],
-            intoTable: ModelContextClient.table
+            intoTable: ModelContextServer.table
         )
     }
 
-    func modelContextClientRemove(identifier: ModelContextClient.ID) {
+    func modelContextServerRemove(identifier: ModelContextServer.ID) {
         try? db.delete(
-            fromTable: ModelContextClient.table,
-            where: ModelContextClient.Properties.id == identifier
+            fromTable: ModelContextServer.table,
+            where: ModelContextServer.Properties.id == identifier
         )
     }
 }

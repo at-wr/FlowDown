@@ -8,6 +8,8 @@
 import UIKit
 
 class SearchControllerOpenButton: UIButton {
+    weak var delegate: Delegate?
+
     init() {
         super.init(frame: .zero)
         setImage(UIImage(systemName: "magnifyingglass"), for: .normal)
@@ -23,9 +25,12 @@ class SearchControllerOpenButton: UIButton {
 
     @objc func didTap() {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        let controller = ConversationSearchController { conv in
-            print(conv ?? -1)
-        }
-        parentViewController?.present(controller, animated: true)
+        delegate?.searchButtonDidTap()
+    }
+}
+
+extension SearchControllerOpenButton {
+    protocol Delegate: AnyObject {
+        func searchButtonDidTap()
     }
 }

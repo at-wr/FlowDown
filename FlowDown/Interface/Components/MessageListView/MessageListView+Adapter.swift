@@ -111,7 +111,7 @@ extension MessageListView: ListViewAdapter {
             case let .aiContent(_, message):
                 markdownViewForSizeCalculation.theme = theme
                 let package = markdownPackageCache.package(for: message, theme: theme)
-                markdownViewForSizeCalculation.setMarkdown(package.blocks, renderedContent: package.renderedContent)
+                markdownViewForSizeCalculation.setMarkdownManually(package)
                 let boundingSize = markdownViewForSizeCalculation.boundingSize(for: containerWidth)
                 return ceil(boundingSize.height)
             case .hint:
@@ -155,7 +155,7 @@ extension MessageListView: ListViewAdapter {
             if case let .aiContent(_, message) = entry {
                 aiMessageView.theme = theme
                 let package = markdownPackageCache.package(for: message, theme: theme)
-                aiMessageView.markdownView.setMarkdown(package.blocks, renderedContent: package.renderedContent)
+                aiMessageView.markdownView.setMarkdown(package)
                 aiMessageView.linkTapHandler = { [weak self] link, range, touchLocation in
                     self?.handleLinkTapped(link, in: range, at: aiMessageView.convert(touchLocation, to: self))
                 }
@@ -352,38 +352,25 @@ extension MessageListView: ListViewAdapter {
                     else { return nil }
                     guard let editor = self.nearestEditor() else { return nil }
                     return UIAction(title: String(localized: "Redo"), image: .init(systemName: "arrow.clockwise")) { _ in
-                        let alert = AlertViewController(
-                            title: String(localized: "Redo Message"),
-                            message: String(localized: "This will delete all messages after this one and fill the content into the editor.")
-                        ) { context in
-                            context.addAction(title: String(localized: "Cancel")) {
-                                context.dispose()
-                            }
-                            context.addAction(title: String(localized: "Redo"), attribute: .dangerous) {
-                                context.dispose {
-                                    let attachments: [RichEditorView.Object.Attachment] = self.session
-                                        .attachments(for: messageIdentifier)
-                                        .compactMap {
-                                            guard let type: RichEditorView.Object.Attachment.AttachmentType = .init(rawValue: $0.type) else {
-                                                return nil
-                                            }
-                                            return RichEditorView.Object.Attachment(
-                                                id: .init(),
-                                                type: type,
-                                                name: $0.name,
-                                                previewImage: $0.previewImageData,
-                                                imageRepresentation: $0.imageRepresentation,
-                                                textRepresentation: $0.representedDocument,
-                                                storageSuffix: $0.storageSuffix
-                                            )
-                                        }
-                                    editor.refill(withText: message.document, attachments: attachments)
-                                    self.session.deleteCurrentAndAfter(messageIdentifier: messageIdentifier)
-                                    DispatchQueue.main.async { editor.focus() }
+                        let attachments: [RichEditorView.Object.Attachment] = self.session
+                            .attachments(for: messageIdentifier)
+                            .compactMap {
+                                guard let type: RichEditorView.Object.Attachment.AttachmentType = .init(rawValue: $0.type) else {
+                                    return nil
                                 }
+                                return RichEditorView.Object.Attachment(
+                                    id: .init(),
+                                    type: type,
+                                    name: $0.name,
+                                    previewImage: $0.previewImageData,
+                                    imageRepresentation: $0.imageRepresentation,
+                                    textRepresentation: $0.representedDocument,
+                                    storageSuffix: $0.storageSuffix
+                                )
                             }
-                        }
-                        referenceView.parentViewController?.present(alert, animated: true)
+                        editor.refill(withText: message.document, attachments: attachments)
+                        self.session.deleteCurrentAndAfter(messageIdentifier: messageIdentifier)
+                        DispatchQueue.main.async { editor.focus() }
                     }
                 }(),
                 { () -> UIAction? in

@@ -123,6 +123,26 @@ extension ModelManager {
 }
 
 extension ModelManager {
+    func checkModelSizeFromHugginFace(identifier: String) async throws -> UInt64 {
+        let repo = Hub.Repo(id: identifier, type: .models)
+        let filenames = try await api.getFilenames(from: repo, matching: [])
+        var totalSize = UInt64(0)
+        for filename in filenames where !Task.isCancelled {
+            let remoteURL = URL(string: "https://huggingface.co")!
+                .appendingPathComponent(repo.id)
+                .appendingPathComponent("resolve")
+                .appendingPathComponent("main")
+                .appendingPathComponent(filename)
+            var request = URLRequest(url: remoteURL)
+            request.httpMethod = "HEAD"
+            let (_, resp) = try await URLSession.shared.data(for: request)
+            let size = resp.expectedContentLength
+            guard size > 0 else { continue }
+            totalSize += UInt64(size)
+        }
+        return totalSize
+    }
+
     @discardableResult
     func downloadModelFromHuggingFace(
         identifier: String,

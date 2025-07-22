@@ -40,11 +40,12 @@ extension MainController {
         viewController.present(alert, animated: true)
     }
 
-    func queueNewConversation(text: String) {
+    func queueNewConversation(text: String, shouldSend: Bool = false) {
         DispatchQueue.main.async {
             let conversation = ConversationManager.shared.createNewConversation()
             print("[+] created new conversation with ID: \(conversation.id)")
             self.load(conversation.id)
+            guard shouldSend else { return }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 if self.chatView.conversationIdentifier == conversation.id {
                     self.sendMessageToCurrentConversation(text)

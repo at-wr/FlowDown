@@ -27,6 +27,10 @@ extension MainController {
     }
 
     func setupLayoutAsCatalyst() {
+        let fullWidth = view.bounds.width
+        let sidebarAllowedWidth = fullWidth - 300
+        let sidebarWidth = min(sidebarWidth, sidebarAllowedWidth)
+
         sidebarDragger.isHidden = false
         if isSidebarCollapsed {
             sidebar.alpha = 0
@@ -101,6 +105,9 @@ extension MainController {
     }
 
     func setupLayoutAsRelaxedStyle() {
+        let fullWidth = view.bounds.width
+        let sidebarAllowedWidth = fullWidth - 300
+        let sidebarWidth = min(sidebarWidth, sidebarAllowedWidth)
         sidebarDragger.isHidden = false
         switch isSidebarCollapsed {
         case true:

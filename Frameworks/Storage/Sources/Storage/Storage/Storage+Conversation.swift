@@ -14,11 +14,20 @@ public extension Storage {
             try? db.getObjects(
                 fromTable: Conversation.table,
                 orderBy: [
-                    CloudModel.Properties.creation
+                    Conversation.Properties.creation
                         .order(.descending),
                 ]
             )
         ) ?? []
+    }
+
+    func conversationListAllIdentifiers() -> Set<Conversation.ID> {
+        let identifiers = try? db.getColumn(
+            on: Conversation.Properties.id,
+            fromTable: Conversation.table
+        )
+        let items = identifiers?.map(\.int64Value) ?? []
+        return .init(items)
     }
 
     func conversationMake() -> Conversation {

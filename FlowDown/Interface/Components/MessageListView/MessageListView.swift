@@ -14,20 +14,30 @@ import Storage
 import UIKit
 
 final class MessageListView: UIView {
-    private lazy var listView: MessageListViewCore = .init()
+    private lazy var listView: ListViewKit.ListView = .init()
     var contentSize: CGSize { listView.contentSize }
 
     lazy var dataSource: ListViewDiffableDataSource<Entry> = .init(listView: listView)
 
     private var entryCount = 0
+    private let updateQueue = DispatchQueue(label: "MessageListView.UpdateQueue", qos: .userInteractive)
+
+    private var isFirstLoad: Bool = true
 
     var session: ConversationSession! {
         didSet {
             isFirstLoad = true
+            alpha = 0
             sessionScopedCancellables.forEach { $0.cancel() }
             sessionScopedCancellables.removeAll()
-            session.messagesDidChange.sink { [unowned self] messages, scrolling in
-                updateFromUpstreamPublisher(messages, scrolling)
+            Publishers.CombineLatest(
+                session.messagesDidChange,
+                loadingIndicatorPublisher
+            )
+            .receive(on: updateQueue)
+            .sink { [weak self] v1, v2 in
+                guard let self else { return }
+                updateFromUpstreamPublisher(v1.0, v1.1, isLoading: v2)
             }
             .store(in: &sessionScopedCancellables)
             session.userDidSendMessage.sink { [unowned self] _ in
@@ -42,19 +52,9 @@ final class MessageListView: UIView {
     ///
     /// When `true`, the list will scroll to the bottom to make the latest message visible.
     private var isAutoScrollingToBottom: Bool = true
-
-    /// A Boolean value that indicates whether the last row in the list is in the suppressed rect.
-    private var isLastRowInSuppressedRect: Bool = false
-    /// A Boolean value that indicates whether the list is suppressed from being updated.
-    ///
-    /// If this property is `true`, newly appended data at the end of the list will temporarily not be applied to the list.
-    private var isUpdatingSuppressed: Bool = false
-
-    private var isLoading: Bool = false
-    private var isFirstLoad: Bool = true
-
     private var viewCancellables: Set<AnyCancellable> = .init()
     private var sessionScopedCancellables: Set<AnyCancellable> = .init()
+    private let loadingIndicatorPublisher = CurrentValueSubject<String?, Never>(nil)
 
     var contentSafeAreaInsets: UIEdgeInsets = .zero {
         didSet {
@@ -83,9 +83,6 @@ final class MessageListView: UIView {
         listView.contentInsetAdjustmentBehavior = .never
         listView.showsVerticalScrollIndicator = false
         listView.showsHorizontalScrollIndicator = false
-        listView.layoutSubviewsCallback = { [unowned self] in
-            moveToEndIfPossibleOnLoad()
-        }
         addSubview(listView)
         listView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
@@ -102,7 +99,7 @@ final class MessageListView: UIView {
                 guard let self else { return }
                 theme = MarkdownTheme.default
                 listView.reloadData()
-                updateList(animated: false)
+                updateList()
             }
             .store(in: &viewCancellables)
     }
@@ -124,61 +121,15 @@ final class MessageListView: UIView {
         }
     }
 
-    private func moveToEndIfPossibleOnLoad() {
-        guard isFirstLoad else { return }
-        let snapshot = dataSource.snapshot()
-        guard !snapshot.isEmpty else {
-            // No messages are retrieved from the database, it means the list is empty,
-            // and no further action is required.
-            isFirstLoad = false
-            return
-        }
-        guard listView.contentSize.height > 0 else {
-            return
-        }
-        listView.setContentOffset(
-            .init(x: 0, y: listView.maximumContentOffset.y),
-            animated: false
-        )
-        listView.setNeedsLayout()
-        isFirstLoad = false
-    }
-
     func loading(with message: String = .init()) {
-        var snapshot = dataSource.snapshot()
-        let lastIndex = snapshot.count - 1
-        let item = snapshot.item(at: lastIndex)
-        let reportingEntry: Entry = .activityReporting(message)
-        if case .activityReporting = item {
-            // Update the existing activity reporting text.
-            snapshot.updateItem(reportingEntry, at: lastIndex)
-        } else {
-            // Add a new activity reporting item.
-            snapshot.append(reportingEntry)
-        }
-        isLoading = true
-        dataSource.applySnapshot(snapshot)
-        if isAutoScrollingToBottom {
-            listView.scroll(to: listView.maximumContentOffset)
-        }
+        loadingIndicatorPublisher.send(message)
     }
 
     func stopLoading() {
-        if !isLoading {
-            return
-        }
-
-        var snapshot = dataSource.snapshot()
-        let lastIndex = snapshot.count - 1
-        let item = snapshot.item(at: lastIndex)
-        if case .activityReporting = item {
-            snapshot.remove(at: lastIndex)
-            dataSource.applySnapshot(snapshot)
-        }
-        isLoading = false
+        loadingIndicatorPublisher.send(nil)
     }
 
-    func handleLinkTapped(_ link: MarkdownTextView.LinkPayload, in _: NSRange, at point: CGPoint) {
+    func handleLinkTapped(_ link: LinkPayload, in _: NSRange, at point: CGPoint) {
         // long press handled
         guard parentViewController?.presentedViewController == nil else { return }
         switch link {
@@ -247,64 +198,42 @@ final class MessageListView: UIView {
         present(menu: menu, anchorPoint: .init(x: location.x, y: location.y + 4))
     }
 
-    func updateList(animated: Bool = true) {
+    func updateList() {
         let entries = entries(from: session.messages)
-        dataSource.applySnapshot(using: entries, animatingDifferences: animated)
+        dataSource.applySnapshot(using: entries, animatingDifferences: false)
     }
 
-    private let updateLock = NSLock()
+    func updateFromUpstreamPublisher(_ messages: [Message], _ scrolling: Bool, isLoading: String?) {
+        assert(!Thread.isMainThread)
+        var entries = entries(from: messages)
 
-    func updateFromUpstreamPublisher(_ messages: [Message], _ scrolling: Bool) {
-        updateLock.lock()
-        defer { updateLock.unlock() }
-
-        let entries = entries(from: messages)
-
-        if !Thread.isMainThread {
-            // do the pre render
-            for entry in entries {
-                switch entry {
-                case let .aiContent(_, messageRepresentation):
-                    _ = markdownPackageCache.package(for: messageRepresentation, theme: theme)
-                default: break
-                }
+        for entry in entries {
+            switch entry {
+            case let .aiContent(_, messageRepresentation):
+                _ = markdownPackageCache.package(for: messageRepresentation, theme: theme)
+            default: break
             }
         }
 
-        let someEntiresBeingRemoved = entryCount > entries.count
+        if let isLoading { entries.append(.activityReporting(isLoading)) }
+
         let shouldScrolling = scrolling && isAutoScrollingToBottom
 
         entryCount = entries.count
-
-        #if DEBUG
-            assert(!isLoading || entries.count > dataSource.numberOfItems(in: listView), "You should not add new rows when loading")
-        #endif
-
-        if !shouldScrolling {
-            // When the list needs to scroll, the list updating cannot be suppressed.
-            let shouldSuppressed = shouldUpdatingSuppressed(with: entries)
-            isUpdatingSuppressed = shouldSuppressed && isLastRowInSuppressedRect
-
-            // but if entry is becoming less, we should update it
-            if isUpdatingSuppressed, !someEntiresBeingRemoved { return }
-        } else {
-            isUpdatingSuppressed = false
-        }
-
-        if Thread.isMainThread {
-            sendViewModelToUpdate(entries, someEntiresBeingRemoved, shouldScrolling)
-        } else {
-            DispatchQueue.main.asyncAndWait {
-                self.sendViewModelToUpdate(entries, someEntiresBeingRemoved, shouldScrolling)
+        DispatchQueue.main.asyncAndWait {
+            if isFirstLoad || alpha == 0 {
+                isFirstLoad = false
+                dataSource.applySnapshot(using: entries, animatingDifferences: false)
+                listView.setContentOffset(.init(x: 0, y: listView.maximumContentOffset.y), animated: false)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    UIView.animate(withDuration: 0.25) { self.alpha = 1 }
+                }
+            } else {
+                dataSource.applySnapshot(using: entries, animatingDifferences: true)
+                if shouldScrolling {
+                    listView.scroll(to: listView.maximumContentOffset)
+                }
             }
-        }
-    }
-
-    func sendViewModelToUpdate(_ entries: [MessageListView.Entry], _ someEntiresBeingRemoved: Bool, _ shouldScrolling: Bool) {
-        assert(Thread.isMainThread)
-        dataSource.applySnapshot(using: entries, animatingDifferences: someEntiresBeingRemoved ? true : false)
-        if shouldScrolling {
-            listView.scroll(to: listView.maximumContentOffset)
         }
     }
 }
@@ -321,56 +250,6 @@ extension MessageListView: UIScrollViewDelegate {
     func scrollViewDidEndDragging(_: UIScrollView, willDecelerate decelerate: Bool) {
         if !decelerate {
             updateAutoScrolling()
-        }
-    }
-
-    func scrollViewDidScroll(_: UIScrollView) {
-        let numberOfItems = dataSource.numberOfItems(in: listView)
-        let lastIndex = numberOfItems - 1
-        if lastIndex < 0 { return }
-        guard let rowView = listView.rowView(at: lastIndex) else {
-            return
-        }
-        isLastRowInSuppressedRect = rowViewInSuppressedRect(rowView)
-        if isUpdatingSuppressed, !isLastRowInSuppressedRect {
-            // When the tail row re-enters the visible updating area, update the list.
-            updateList(animated: false)
-            isUpdatingSuppressed = false
-        }
-    }
-
-    private func shouldUpdatingSuppressed(with entries: [Entry]) -> Bool {
-        let numberOfItems = dataSource.numberOfItems(in: listView)
-        if numberOfItems != entries.count {
-            return false
-        }
-        let lastIndex = numberOfItems - 1
-        if lastIndex < 0 {
-            return false
-        }
-        guard let lastItem = dataSource.item(at: lastIndex, in: listView) as? Entry else {
-            assertionFailure()
-            return false
-        }
-        return entries[lastIndex] != lastItem
-    }
-
-    private func rowViewInSuppressedRect(_ rowView: ListRowView) -> Bool {
-        let rect = rowView.convert(rowView.bounds, to: listView)
-        // If the tail of the last row exceeds the visible area by a certain distance,
-        // the list update can be paused.
-        let overflow = rect.maxY - listView.bounds.maxY
-        return overflow >= 50
-    }
-}
-
-extension MessageListView {
-    final class MessageListViewCore: ListViewKit.ListView {
-        var layoutSubviewsCallback: (() -> Void)?
-
-        override func layoutSubviews() {
-            super.layoutSubviews()
-            layoutSubviewsCallback?()
         }
     }
 }

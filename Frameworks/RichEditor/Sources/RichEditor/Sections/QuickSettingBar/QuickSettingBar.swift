@@ -20,6 +20,7 @@ public class QuickSettingBar: EditorSectionView {
         text: NSLocalizedString("Tools", bundle: .module, comment: ""),
         icon: "tools"
     )
+    let toolsToggleRightClickFinder = RightClickFinder()
     let ephemeralChatToggle = ToggleBlockButton(
         text: NSLocalizedString("Ephemeral Chat", bundle: .module, comment: ""),
         icon: "beaker"
@@ -80,6 +81,14 @@ public class QuickSettingBar: EditorSectionView {
         }
         modelPickerRightClickFinder.install(on: modelPicker) { [weak self] in
             self?.delegate?.quickSettingBarShowAlternativeModelMenu()
+        }
+
+        toolsToggleRightClickFinder.install(on: toolsToggle) { [weak self] in
+            self?.delegate?.quickSettingBarShowAlternativeToolsMenu()
+        }
+
+        toolsToggle.contextMenuChecker = { [weak toolsToggleRightClickFinder] in
+            toolsToggleRightClickFinder?.isContextMenuActive ?? false
         }
 
         heightPublisher.send(height)

@@ -188,6 +188,9 @@ extension ModelManager {
         var request = URLRequest(url: endpoint, cachePolicy: .reloadIgnoringLocalAndRemoteCacheData, timeoutInterval: 60)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        for value in model.headers {
+            request.setValue(value.value, forHTTPHeaderField: value.key)
+        }
         if !model.token.isEmpty { request.setValue("Bearer \(model.token)", forHTTPHeaderField: "Authorization") }
         request.httpBody = data
         URLSession.shared.dataTask(with: request) { _, resp, _ in
@@ -332,8 +335,17 @@ extension ModelManager {
             )
         )
         let message = response.choices.first?.message
+        let reasoning = message?.reasoning ?? .init()
+        let reasoningContent = message?.reasoningContent ?? .init()
+
+        let finalReasoning = if reasoning == reasoningContent, !reasoning.isEmpty {
+            reasoning
+        } else {
+            [reasoning, reasoningContent].filter { !$0.isEmpty }.joined()
+        }
+
         return .init(
-            reasoningContent: message?.reasoningContent ?? .init(),
+            reasoningContent: finalReasoning,
             content: message?.content ?? .init(),
             // TODO: IMPL
             tool: []
@@ -362,10 +374,14 @@ extension ModelManager {
             switch streamObject {
             case let .chatCompletionChunk(chunk):
                 let delta = chunk.choices.first?.delta
-                msg.reasoningContent = [
-                    delta?.reasoning ?? .init(),
-                    delta?.reasoningContent ?? .init(),
-                ].joined()
+                let reasoning = delta?.reasoning ?? .init()
+                let reasoningContent = delta?.reasoningContent ?? .init()
+
+                msg.reasoningContent = if reasoning == reasoningContent, !reasoning.isEmpty {
+                    reasoning
+                } else {
+                    [reasoning, reasoningContent].filter { !$0.isEmpty }.joined()
+                }
                 msg.content = delta?.content ?? .init()
             case let .tool(call):
                 msg.toolCallRequests = [call]

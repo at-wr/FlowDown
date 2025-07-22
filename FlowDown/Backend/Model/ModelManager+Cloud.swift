@@ -9,8 +9,6 @@ import CommonCrypto
 import Foundation
 import Storage
 
-private let serverProfileLocation = "https://dorian.qaq.wiki/activation/wiki.qaq.flowdown/trail/model/profile"
-
 extension CloudModel {
     var modelDisplayName: String {
         var ret = model_identifier
@@ -186,95 +184,5 @@ extension ModelManager {
         if model.id.isEmpty { model.id = UUID().uuidString }
         insertCloudModel(model)
         return model
-    }
-}
-
-extension ModelManager {
-    typealias ControlledProfileFetchResult = Result<CloudModel, Error>
-    func requestModelProfileFromServer(_ completion: @escaping (ControlledProfileFetchResult) -> Void) {
-        let url = URL(string: serverProfileLocation)!
-        var request = URLRequest(
-            url: url,
-            cachePolicy: .reloadIgnoringLocalAndRemoteCacheData,
-            timeoutInterval: 30
-        )
-        let requestDic: [String: String] = [
-            "version": String(AnchorVersion.version),
-            "build": String(AnchorVersion.build),
-            "verification": String(AnchorVersion.magical),
-        ]
-        request.httpMethod = "POST"
-        request.httpBody = try? JSONSerialization.data(withJSONObject: requestDic, options: [])
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        PinSessionDelegate.dataTask(with: request) { data, _, err in
-            guard let data,
-                  let object = try? PropertyListDecoder().decode(CloudModel.self, from: data)
-            else {
-                return completion(.failure(err ?? NSError(domain: "ModelManager", code: -1, userInfo: [
-                    NSLocalizedDescriptionKey: String(localized: "Failed to fetch model profile"),
-                ])))
-            }
-            completion(.success(object))
-        }.resume()
-    }
-}
-
-private class PinSessionDelegate: NSObject, URLSessionDelegate {
-    static let shared = PinSessionDelegate()
-
-    let pinnedCertificateList = Set([
-        "debd2c5d3adfa44685538dc658ea2801f770f890",
-    ])
-
-    let eligibleSummaryList = Set([
-        "dorian.qaq.wiki",
-    ])
-
-    func urlSession(
-        _: URLSession,
-        didReceive challenge: URLAuthenticationChallenge,
-        completionHandler: @escaping @Sendable (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
-    ) {
-        guard let trust = challenge.protectionSpace.serverTrust,
-              SecTrustGetCertificateCount(trust) > 0,
-              let certChain = SecTrustCopyCertificateChain(trust) as? [SecCertificate],
-              !certChain.isEmpty
-        else {
-            completionHandler(.cancelAuthenticationChallenge, nil)
-            return
-        }
-        for cert in certChain {
-            let summary = SecCertificateCopySubjectSummary(cert)
-            if let summaryString = summary as? String, !eligibleSummaryList.contains(summaryString) {
-                completionHandler(.cancelAuthenticationChallenge, nil)
-                return
-            }
-            let data = SecCertificateCopyData(cert) as Data
-            var digest = [UInt8](repeating: 0, count: Int(CC_SHA1_DIGEST_LENGTH))
-            data.withUnsafeBytes {
-                _ = CC_SHA1($0.baseAddress, CC_LONG(data.count), &digest)
-            }
-            let hexBytes = digest.map { String(format: "%02hhx", $0) }
-            let hex = hexBytes.joined()
-            if pinnedCertificateList.contains(hex) {
-                completionHandler(.useCredential, .init(trust: trust))
-                return
-            }
-        }
-        completionHandler(.cancelAuthenticationChallenge, nil)
-    }
-
-    typealias CompletionHandler = (Data?, URLResponse?, Error?) -> Void
-    fileprivate
-    static func dataTask(with request: URLRequest, completionHandler: @escaping CompletionHandler = { _, _, _ in }) -> URLSessionDataTask {
-        let sessionConfiguration = URLSessionConfiguration.default
-        sessionConfiguration.urlCache = nil
-        sessionConfiguration.requestCachePolicy = .reloadIgnoringLocalAndRemoteCacheData
-        sessionConfiguration.allowsCellularAccess = true
-        sessionConfiguration.allowsExpensiveNetworkAccess = true
-        sessionConfiguration.allowsConstrainedNetworkAccess = true
-        sessionConfiguration.connectionProxyDictionary = [:]
-        let session = URLSession(configuration: sessionConfiguration, delegate: shared, delegateQueue: nil)
-        return session.dataTask(with: request, completionHandler: completionHandler)
     }
 }

@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Lakr233/AlertController",
       "state" : {
-        "revision" : "819fba938c48fbf50026bc1eae10177b501658e5",
-        "version" : "1.1.4"
+        "revision" : "2d6ab3046655205d035a1e7ac96c867875a26344",
+        "version" : "1.1.5"
       }
     },
     {
@@ -64,6 +64,15 @@
       }
     },
     {
+      "identity" : "dpkgversion",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Lakr233/DpkgVersion",
+      "state" : {
+        "revision" : "64f192ac8c74f334e5b610c3da9aa9b456502ced",
+        "version" : "1.0.4"
+      }
+    },
+    {
       "identity" : "eventsource",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/loopwork-ai/eventsource",
@@ -77,8 +86,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/ktiays/GlyphixTextFx/",
       "state" : {
-        "revision" : "a0433f18b8032a75711e724d0c85c900363438b4",
-        "version" : "2.2.1"
+        "revision" : "a4a0a0df21ab8c79f57525c08149b4d577ee2319",
+        "version" : "2.3.2"
       }
     },
     {
@@ -104,8 +113,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/johnmai-dev/Jinja",
       "state" : {
-        "revision" : "31c4dd39bcdc07eaa42a384bdc88ea599022b800",
-        "version" : "1.1.2"
+        "revision" : "fc1233dea1142897d474bda2f1f9a6c3fe7acab6",
+        "version" : "1.2.1"
       }
     },
     {
@@ -115,15 +124,6 @@
       "state" : {
         "revision" : "a4372d7f90c846d834c1f1575d1af0050d70fa0f",
         "version" : "1.1.6"
-      }
-    },
-    {
-      "identity" : "litext",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/Lakr233/Litext",
-      "state" : {
-        "revision" : "fb02814ad729b8a0b1db19db31e4c75535d58f8b",
-        "version" : "0.4.9"
       }
     },
     {
@@ -140,8 +140,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Lakr233/MarkdownView",
       "state" : {
-        "revision" : "efa3e3bd0ae82200d4534fac9e637adc5454582b",
-        "version" : "2.3.2"
+        "revision" : "0e41c6d3ad21bb2736cbd188706df3b9097098d6",
+        "version" : "3.2.5"
       }
     },
     {
@@ -149,8 +149,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/ml-explore/mlx-swift",
       "state" : {
-        "revision" : "b79c74ce773440b86a81ef925ea78dd5023a16c0",
-        "version" : "0.25.5"
+        "revision" : "96c0f69cf15f38abd6248bb71fca908171dab1d8",
+        "version" : "0.25.6"
       }
     },
     {
@@ -159,7 +159,7 @@
       "location" : "https://github.com/ml-explore/mlx-swift-examples/",
       "state" : {
         "branch" : "main",
-        "revision" : "2fcd726f82c85f0c9ebc4f8f8a19dd447ab07bc5"
+        "revision" : "073e6577fbc886ec4e94a0e3adb2cc34e5ddebf5"
       }
     },
     {
@@ -203,8 +203,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Lakr233/Splash",
       "state" : {
-        "revision" : "4d997712fe07f75695aacdf287aeb3b1f2c6ab88",
-        "version" : "0.17.0"
+        "revision" : "de9cde249fdb7a173a6e6b950ab18b11f6c2a557",
+        "version" : "0.18.0"
       }
     },
     {
@@ -293,8 +293,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/huggingface/swift-transformers",
       "state" : {
-        "revision" : "c2f302a74cca59cbde683b1425ab43c05685515a",
-        "version" : "0.1.21"
+        "revision" : "e5bf0627bd134cf8ddc407cda403ae84207af959",
+        "version" : "0.1.22"
       }
     },
     {
@@ -309,10 +309,10 @@
     {
       "identity" : "swiftmath",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/mgriebling/SwiftMath",
+      "location" : "https://github.com/Lakr233/SwiftMath",
       "state" : {
-        "revision" : "606f9be66db6afe0c41c3b064723a57061723db7",
-        "version" : "1.7.1"
+        "revision" : "cfd646dcac0c5553e21ebf1ee05f9078277518bc",
+        "version" : "1.7.2"
       }
     },
     {
@@ -320,8 +320,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/scinfu/SwiftSoup",
       "state" : {
-        "revision" : "aa85ee96017a730031bafe411cde24a08a17a9c9",
-        "version" : "2.8.8"
+        "revision" : "dee225a3da7b68d34936abc4dc8f34f2264db647",
+        "version" : "2.9.6"
       }
     },
     {

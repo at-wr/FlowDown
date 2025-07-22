@@ -6,6 +6,7 @@
 //
 
 import AlertController
+import OrderedCollections
 import Storage
 import UIKit
 
@@ -51,6 +52,25 @@ extension AppDelegate {
             ),
             atEndOfMenu: .file
         )
+
+        if UpdateManager.shared.canCheckForUpdates {
+            builder.insertSibling(
+                UIMenu(
+                    title: "",
+                    options: .displayInline,
+                    children: [
+                        UIKeyCommand(
+                            title: String(localized: "Check for Updates..."),
+                            action: #selector(checkForUpdatesFromMenu(_:)),
+                            input: "u",
+                            modifierFlags: [.command, .shift]
+                        ),
+                    ]
+                ),
+                afterMenu: .preferences
+            )
+        }
+
         builder.insertSibling(
             UIMenu(
                 title: "",
@@ -65,6 +85,22 @@ extension AppDelegate {
                 ]
             ),
             afterMenu: .preferences
+        )
+
+        builder.insertChild(
+            UIMenu(
+                title: "",
+                options: .displayInline,
+                children: [
+                    UIKeyCommand(
+                        title: String(localized: "Search…"),
+                        action: #selector(searchConversationsFromMenu(_:)),
+                        input: "f",
+                        modifierFlags: [.command, .shift]
+                    ),
+                ]
+            ),
+            atStartOfMenu: .edit
         )
         builder.insertChild(
             UIMenu(
@@ -140,9 +176,18 @@ extension AppDelegate {
             .first
     }
 
+    @objc func checkForUpdatesFromMenu(_: Any?) {
+        UpdateManager.shared.anchor(mainWindow?.rootViewController?.view ?? .init())
+        UpdateManager.shared.performUpdateCheckFromUI()
+    }
+
     // Wire from MainController
     @objc func requestNewChatFromMenu(_: Any?) {
         (mainWindow?.rootViewController as? MainController)?.requestNewChat()
+    }
+
+    @objc func searchConversationsFromMenu(_: Any?) {
+        (mainWindow?.rootViewController as? MainController)?.searchConversationsFromMenu()
     }
 
     @objc func openSettingsFromMenu(_: Any?) {
@@ -200,7 +245,7 @@ extension AppDelegate {
     // conversation navigation
     @objc func selectPreviousConversationFromMenu(_: Any?) {
         withCurrentConversation { mainVC, conversationID, _ in
-            let list = ConversationManager.shared.conversations.value
+            let list = ConversationManager.shared.conversations.value.values
             guard let currentIndex = list.firstIndex(where: { $0.id == conversationID }), currentIndex > 0 else { return }
             let previousID = list[currentIndex - 1].id
             mainVC.sidebar.chatSelection = previousID
@@ -212,7 +257,7 @@ extension AppDelegate {
 
     @objc func selectNextConversationFromMenu(_: Any?) {
         withCurrentConversation { mainVC, conversationID, _ in
-            let list = ConversationManager.shared.conversations.value
+            let list = ConversationManager.shared.conversations.value.values
             guard let currentIndex = list.firstIndex(where: { $0.id == conversationID }), currentIndex < list.count - 1 else { return }
             let nextID = list[currentIndex + 1].id
             mainVC.sidebar.chatSelection = nextID

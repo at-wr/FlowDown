@@ -11,12 +11,6 @@ import RichEditor
 import Storage
 import UIKit
 
-#if targetEnvironment(macCatalyst)
-    private let defaultSidebarCollapseValue: Bool = false
-#else
-    private let defaultSidebarCollapseValue: Bool = true
-#endif
-
 class MainController: UIViewController {
     let textureBackground = UIImageView().with {
         $0.image = .backgroundTexture
@@ -56,7 +50,7 @@ class MainController: UIViewController {
         }
     }
 
-    var isSidebarCollapsed = defaultSidebarCollapseValue {
+    var isSidebarCollapsed: Bool {
         didSet {
             guard oldValue != isSidebarCollapsed else { return }
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -86,6 +80,12 @@ class MainController: UIViewController {
     var bootMessages: [String] = []
 
     init() {
+        #if targetEnvironment(macCatalyst)
+            isSidebarCollapsed = false
+        #else
+            isSidebarCollapsed = true
+        #endif
+
         super.init(nibName: nil, bundle: nil)
 
         NotificationCenter.default.addObserver(
@@ -375,18 +375,23 @@ class MainController: UIViewController {
         }
     }
 
-    @objc func expendSidebar() {
+    @objc func openSidebar() {
         view.doWithAnimation { self.isSidebarCollapsed = false }
+    }
+
+    @objc func searchConversationsFromMenu(_: Any? = nil) {
+        sidebar.searchButton.delegate?.searchButtonDidTap()
     }
 }
 
 extension MainController: NewChatButton.Delegate {
     func newChatDidCreated(_ identifier: Conversation.ID) {
         sidebar.newChatDidCreated(identifier)
+        if !allowSidebarPersistence {
+            view.doWithAnimation { self.isSidebarCollapsed = true }
+        }
         chatView.use(conversation: identifier) { [weak self] in
-            #if targetEnvironment(macCatalyst)
-                self?.chatView.focusEditor()
-            #endif
+            self?.chatView.focusEditor()
         }
     }
 }

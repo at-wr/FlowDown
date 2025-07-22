@@ -53,3 +53,16 @@ extension UIView {
         endEditing(true)
     }
 }
+
+extension UIView {
+    var nearestScrollView: UIScrollView? {
+        var look: UIView = self
+        while let superview = look.superview {
+            look = superview
+            if let scrollView = superview as? UIScrollView {
+                return scrollView
+            }
+        }
+        return nil
+    }
+}

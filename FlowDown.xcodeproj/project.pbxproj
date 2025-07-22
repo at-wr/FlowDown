@@ -13,7 +13,6 @@
 		502B98062D535F25003200B6 /* Emoji.json in Resources */ = {isa = PBXBuildFile; fileRef = 502B98052D535F25003200B6 /* Emoji.json */; };
 		502BCBD12D43DB2B00500180 /* ConfigurableKit in Frameworks */ = {isa = PBXBuildFile; productRef = 502BCBD02D43DB2B00500180 /* ConfigurableKit */; };
 		50343FCD2DA2515C00CC6820 /* Respring in Frameworks */ = {isa = PBXBuildFile; productRef = 50343FC02DA2515C00CC6820 /* Respring */; };
-		50343FCE2DA2515C00CC6820 /* Litext in Frameworks */ = {isa = PBXBuildFile; productRef = 50343FBD2DA2515C00CC6820 /* Litext */; };
 		50343FCF2DA2515C00CC6820 /* Digger in Frameworks */ = {isa = PBXBuildFile; productRef = 50343FB72DA2515C00CC6820 /* Digger */; };
 		50343FD02DA2515C00CC6820 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 50343FAB2DA2515C00CC6820 /* Storage */; };
 		50343FD12DA2515C00CC6820 /* RichEditor in Frameworks */ = {isa = PBXBuildFile; productRef = 50343FAA2DA2515C00CC6820 /* RichEditor */; };
@@ -48,6 +47,8 @@
 		5050EB7C2D4789A300634B81 /* Transformers in Frameworks */ = {isa = PBXBuildFile; productRef = 5050EB7B2D4789A300634B81 /* Transformers */; };
 		505535BC2D72F38900F54B28 /* AlignedCollectionViewFlowLayout in Frameworks */ = {isa = PBXBuildFile; productRef = 505535BB2D72F38900F54B28 /* AlignedCollectionViewFlowLayout */; };
 		505535C12D72F7EF00F54B28 /* PrivacyPolicy.md in Resources */ = {isa = PBXBuildFile; fileRef = 505535C02D72F7EF00F54B28 /* PrivacyPolicy.md */; };
+		505742452E1B8B2A00A26090 /* DpkgVersion in Frameworks */ = {isa = PBXBuildFile; productRef = 505742442E1B8B2A00A26090 /* DpkgVersion */; };
+		505742472E1B8B8100A26090 /* DpkgVersion in Frameworks */ = {isa = PBXBuildFile; productRef = 505742462E1B8B8100A26090 /* DpkgVersion */; };
 		505BC6F92D42A73600894BB0 /* AlertController in Frameworks */ = {isa = PBXBuildFile; productRef = 505BC6F82D42A73600894BB0 /* AlertController */; };
 		505FC6192D4945E500F4CB17 /* SPIndicator in Frameworks */ = {isa = PBXBuildFile; productRef = 505FC6182D4945E500F4CB17 /* SPIndicator */; };
 		505FC65B2D4A754F00F4CB17 /* MLXVLM in Frameworks */ = {isa = PBXBuildFile; productRef = 505FC65A2D4A754F00F4CB17 /* MLXVLM */; };
@@ -70,7 +71,6 @@
 		86B4FDC02E1190AD00C6DC8F /* MCP in Frameworks */ = {isa = PBXBuildFile; productRef = 86B4FDBF2E1190AD00C6DC8F /* MCP */; };
 		86B4FDC22E1190C000C6DC8F /* MCP in Frameworks */ = {isa = PBXBuildFile; productRef = 86B4FDC12E1190C000C6DC8F /* MCP */; };
 		ED16359C2D5C5BDA0081BD0B /* ChatClientKit in Frameworks */ = {isa = PBXBuildFile; productRef = ED16359B2D5C5BDA0081BD0B /* ChatClientKit */; };
-		ED74633E2D5A706C0009E83F /* Litext in Frameworks */ = {isa = PBXBuildFile; productRef = ED74633D2D5A706C0009E83F /* Litext */; };
 		EDF9A13E2D67788A001D183C /* Respring in Frameworks */ = {isa = PBXBuildFile; productRef = EDF9A13D2D67788A001D183C /* Respring */; };
 /* End PBXBuildFile section */
 
@@ -149,7 +149,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				50343FCD2DA2515C00CC6820 /* Respring in Frameworks */,
-				50343FCE2DA2515C00CC6820 /* Litext in Frameworks */,
 				50343FCF2DA2515C00CC6820 /* Digger in Frameworks */,
 				50343FD02DA2515C00CC6820 /* Storage in Frameworks */,
 				50343FD12DA2515C00CC6820 /* RichEditor in Frameworks */,
@@ -172,6 +171,7 @@
 				50343FE22DA2515C00CC6820 /* MLXVLM in Frameworks */,
 				50FBFC6E2DEA2E5D00098EC4 /* XMLCoder in Frameworks */,
 				50343FE32DA2515C00CC6820 /* AlignedCollectionViewFlowLayout in Frameworks */,
+				505742452E1B8B2A00A26090 /* DpkgVersion in Frameworks */,
 				50343FE42DA2515C00CC6820 /* MarkdownView in Frameworks */,
 				50DDB1732DDF170000351E46 /* ListViewKit in Frameworks */,
 				50343FE52DA2515C00CC6820 /* RunestoneEditor in Frameworks */,
@@ -184,12 +184,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				EDF9A13E2D67788A001D183C /* Respring in Frameworks */,
-				ED74633E2D5A706C0009E83F /* Litext in Frameworks */,
 				50FBFC6C2DEA2E5400098EC4 /* XMLCoder in Frameworks */,
 				50B4CDAC2D4794F90028EB33 /* Digger in Frameworks */,
 				50C9035B2D428DAD00E6E3A8 /* Storage in Frameworks */,
 				501C98E12D3E52CE00CD8E11 /* RichEditor in Frameworks */,
 				505FC6192D4945E500F4CB17 /* SPIndicator in Frameworks */,
+				505742472E1B8B8100A26090 /* DpkgVersion in Frameworks */,
 				5050EB0B2D46DCB900634B81 /* MLXLMCommon in Frameworks */,
 				50E3FA092D6D7FB8000405BD /* GPTEncoder in Frameworks */,
 				5050EACF2D46D41400634B81 /* MLX in Frameworks */,
@@ -278,6 +278,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 50343FED2DA2515C00CC6820 /* Build configuration list for PBXNativeTarget "FlowDown-Catalyst" */;
 			buildPhases = (
+				5082CB482E1E656F0024A0BC /* Swift Format */,
 				50343FCA2DA2515C00CC6820 /* Sources */,
 				50343FCC2DA2515C00CC6820 /* Frameworks */,
 				50343FE72DA2515C00CC6820 /* Resources */,
@@ -313,7 +314,6 @@
 				50343FB82DA2515C00CC6820 /* SPIndicator */,
 				50343FBA2DA2515C00CC6820 /* MLXVLM */,
 				50343FBB2DA2515C00CC6820 /* ZIPFoundation */,
-				50343FBD2DA2515C00CC6820 /* Litext */,
 				50343FBE2DA2515C00CC6820 /* ChatClientKit */,
 				50343FBF2DA2515C00CC6820 /* ScrubberKit */,
 				50343FC02DA2515C00CC6820 /* Respring */,
@@ -324,6 +324,7 @@
 				50DDB1722DDF170000351E46 /* ListViewKit */,
 				50FBFC6D2DEA2E5D00098EC4 /* XMLCoder */,
 				86B4FDBF2E1190AD00C6DC8F /* MCP */,
+				505742442E1B8B2A00A26090 /* DpkgVersion */,
 			);
 			productName = FlowDown;
 			productReference = 50343FF02DA2515C00CC6820 /* FlowDown.app */;
@@ -333,6 +334,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 503498D02D23053E004672BD /* Build configuration list for PBXNativeTarget "FlowDown" */;
 			buildPhases = (
+				5082D04F2E1E66FB0024A0BC /* Swift Format */,
 				503498B92D23053D004672BD /* Sources */,
 				503498BA2D23053D004672BD /* Frameworks */,
 				503498BB2D23053D004672BD /* Resources */,
@@ -368,7 +370,6 @@
 				505FC6182D4945E500F4CB17 /* SPIndicator */,
 				505FC65A2D4A754F00F4CB17 /* MLXVLM */,
 				50B492932D4F609E00F4D2B3 /* ZIPFoundation */,
-				ED74633D2D5A706C0009E83F /* Litext */,
 				ED16359B2D5C5BDA0081BD0B /* ChatClientKit */,
 				500373C42D62757700585574 /* ScrubberKit */,
 				EDF9A13D2D67788A001D183C /* Respring */,
@@ -380,6 +381,7 @@
 				50CB4E742DE30A57009C58E1 /* Digger */,
 				50FBFC6B2DEA2E5400098EC4 /* XMLCoder */,
 				86B4FDC12E1190C000C6DC8F /* MCP */,
+				505742462E1B8B8100A26090 /* DpkgVersion */,
 			);
 			productName = FlowDown;
 			productReference = 503498BD2D23053D004672BD /* FlowDown.app */;
@@ -431,6 +433,7 @@
 				50A350B92DE4B5C3008F094E /* XCRemoteSwiftPackageReference "MarkdownView" */,
 				50FBFC6A2DEA2E5400098EC4 /* XCRemoteSwiftPackageReference "XMLCoder" */,
 				86B4FDBE2E1190AD00C6DC8F /* XCRemoteSwiftPackageReference "swift-sdk" */,
+				505742432E1B8B2A00A26090 /* XCRemoteSwiftPackageReference "DpkgVersion" */,
 			);
 			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
@@ -464,6 +467,47 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		5082CB482E1E656F0024A0BC /* Swift Format */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Swift Format";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/zsh;
+			shellScript = "PATH=$PATH:/opt/homebrew/bin/\nswiftformat . --swiftversion 6.0\n";
+		};
+		5082D04F2E1E66FB0024A0BC /* Swift Format */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Swift Format";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/zsh;
+			shellScript = "PATH=$PATH:/opt/homebrew/bin/\nswiftformat . --swiftversion 6.0\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		50343FCA2DA2515C00CC6820 /* Sources */ = {
@@ -504,7 +548,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "FlowDown/Resources/Entitlements/Entitlements-Catalyst.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 262;
+				CURRENT_PROJECT_VERSION = 370;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "FlowDown/Resources/InfoPlist/Info-Catalyst.plist";
@@ -527,7 +571,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.26;
+				MARKETING_VERSION = 2.9;
 				PRODUCT_BUNDLE_IDENTIFIER = wiki.qaq.fdp;
 				PRODUCT_NAME = FlowDown;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -548,7 +592,7 @@
 				CODE_SIGN_ENTITLEMENTS = "FlowDown/Resources/Entitlements/Entitlements-Catalyst.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 262;
+				CURRENT_PROJECT_VERSION = 370;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "FlowDown/Resources/InfoPlist/Info-Catalyst.plist";
@@ -571,7 +615,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.26;
+				MARKETING_VERSION = 2.9;
 				PRODUCT_BUNDLE_IDENTIFIER = wiki.qaq.flow;
 				PRODUCT_NAME = FlowDown;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -592,7 +636,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "FlowDown/Resources/Entitlements/Entitlements-iOS.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 262;
+				CURRENT_PROJECT_VERSION = 370;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "FlowDown/Resources/InfoPlist/Info-iOS.plist";
@@ -617,7 +661,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.26;
+				MARKETING_VERSION = 2.9;
 				PRODUCT_BUNDLE_IDENTIFIER = wiki.qaq.fdp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -638,7 +682,7 @@
 				CODE_SIGN_ENTITLEMENTS = "FlowDown/Resources/Entitlements/Entitlements-iOS.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 262;
+				CURRENT_PROJECT_VERSION = 370;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "FlowDown/Resources/InfoPlist/Info-iOS.plist";
@@ -663,7 +707,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.26;
+				MARKETING_VERSION = 2.9;
 				PRODUCT_BUNDLE_IDENTIFIER = wiki.qaq.flow;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -848,7 +892,7 @@
 			repositoryURL = "https://github.com/Lakr233/AlertController";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.1.4;
+				minimumVersion = 1.1.5;
 			};
 		};
 		50014D7D2D8A9B0000C10932 /* XCRemoteSwiftPackageReference "GlyphixTextFx" */ = {
@@ -1003,6 +1047,14 @@
 				minimumVersion = 0.1.15;
 			};
 		};
+		505742432E1B8B2A00A26090 /* XCRemoteSwiftPackageReference "DpkgVersion" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Lakr233/DpkgVersion";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.4;
+			};
+		};
 		505FC6172D4945B300F4CB17 /* XCRemoteSwiftPackageReference "SPIndicator" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ivanvorobei/SPIndicator";
@@ -1016,7 +1068,7 @@
 			repositoryURL = "https://github.com/Lakr233/MarkdownView";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 2.3.2;
+				minimumVersion = 3.2.5;
 			};
 		};
 		50B492922D4F602C00F4D2B3 /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
@@ -1191,10 +1243,6 @@
 			package = 50343FBC2DA2515C00CC6820 /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
 			productName = ZIPFoundation;
 		};
-		50343FBD2DA2515C00CC6820 /* Litext */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Litext;
-		};
 		50343FBE2DA2515C00CC6820 /* ChatClientKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ChatClientKit;
@@ -1258,6 +1306,16 @@
 		505535BB2D72F38900F54B28 /* AlignedCollectionViewFlowLayout */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = AlignedCollectionViewFlowLayout;
+		};
+		505742442E1B8B2A00A26090 /* DpkgVersion */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 505742432E1B8B2A00A26090 /* XCRemoteSwiftPackageReference "DpkgVersion" */;
+			productName = DpkgVersion;
+		};
+		505742462E1B8B8100A26090 /* DpkgVersion */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 505742432E1B8B2A00A26090 /* XCRemoteSwiftPackageReference "DpkgVersion" */;
+			productName = DpkgVersion;
 		};
 		505BC6F82D42A73600894BB0 /* AlertController */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -1347,10 +1405,6 @@
 		ED16359B2D5C5BDA0081BD0B /* ChatClientKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ChatClientKit;
-		};
-		ED74633D2D5A706C0009E83F /* Litext */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Litext;
 		};
 		EDF9A13D2D67788A001D183C /* Respring */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -89,6 +89,15 @@ extension SettingController.SettingContent {
             ) { $0.bottom /= 2 }
             stackView.addArrangedSubview(SeparatorView())
 
+            let mcpObject = ConfigurableObject(
+                icon: "server.rack",
+                title: String(localized: "MCP Tools"),
+                explain: String(localized: "Manage tools provided by MCP servers."),
+                ephemeralAnnotation: .page { MCPController() }
+            )
+            stackView.addArrangedSubviewWithMargin(mcpObject.createView())
+            stackView.addArrangedSubview(SeparatorView())
+
             for tool in ModelToolsManager.shared.configurableTools {
                 stackView.addArrangedSubviewWithMargin(tool.createConfigurableObjectView())
                 stackView.addArrangedSubview(SeparatorView())
@@ -97,6 +106,23 @@ extension SettingController.SettingContent {
             stackView.addArrangedSubviewWithMargin(
                 ConfigurableSectionFooterView().with(
                     footer: String(localized: "These tools can only be used by models that support tool calls, and whether to use them is determined by the model.")
+                )
+            ) { $0.top /= 2 }
+            stackView.addArrangedSubview(SeparatorView())
+
+            stackView.addArrangedSubviewWithMargin(
+                ConfigurableSectionHeaderView().with(
+                    header: String(localized: "Automation")
+                )
+            ) { $0.bottom /= 2 }
+            stackView.addArrangedSubview(SeparatorView())
+
+            stackView.addArrangedSubviewWithMargin(ModelToolsManager.skipConfirmation)
+            stackView.addArrangedSubview(SeparatorView())
+
+            stackView.addArrangedSubviewWithMargin(
+                ConfigurableSectionFooterView().with(
+                    footer: String(localized: "We strongly recommend that you do not enable this feature unless you are sure what you are doing. It may cause unexpected behavior and even data loss.")
                 )
             ) { $0.top /= 2 }
             stackView.addArrangedSubview(SeparatorView())

@@ -7,6 +7,7 @@
 
 import Combine
 import Foundation
+import OrderedCollections
 import RichEditor
 import Storage
 
@@ -27,10 +28,11 @@ extension ConversationManager {
             DispatchQueue.global(qos: .userInitiated).async {
                 let items: [Conversation] = sdb.conversationList()
                 print("[+] scanned \(items.count) conversations")
+                let dic = OrderedDictionary(uniqueKeysWithValues: items.map { ($0.id, $0) })
 
                 // Update UI on main queue
                 DispatchQueue.main.async {
-                    self.conversations.send(items)
+                    self.conversations.send(dic)
                 }
             }
         }
@@ -43,10 +45,10 @@ extension ConversationManager {
     }
 
     func initialConversation() -> Conversation {
-        if let firstItem = conversations.value.first,
+        if let firstItem = conversations.value.values.first,
            message(within: firstItem.id).isEmpty
         {
-            print("[+] using first empty conversation with index: \(firstItem.id)")
+            print("[+] using first empty conversation with id: \(firstItem.id)")
             return firstItem
         }
         print("[+] creating a new conversation")

@@ -29,8 +29,7 @@ class HubModelDetailController: StackScrollController {
     let indicator = UIActivityIndicatorView(style: .medium)
     var task: Task<Void, Error>?
 
-    @BareCodableStorage(key: "ModelDownloadController.disableWarnings", defaultValue: false)
-    var disableWarnings
+    let disableWarnings = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -59,59 +58,31 @@ class HubModelDetailController: StackScrollController {
     }
 
     func setMarkdownContent(_ markdown: String) {
-        let nodes = MarkdownParser().parse(markdown)
+        let result = MarkdownParser().parse(markdown)
         var theme = MarkdownTheme()
         theme.align(to: UIFont.preferredFont(forTextStyle: .subheadline).pointSize)
-        var renderedContexts: [String: RenderedItem] = [:]
-        for (key, value) in nodes.mathContext {
-            let image = MathRenderer.renderToImage(
-                latex: value,
-                fontSize: theme.fonts.body.pointSize,
-                textColor: theme.colors.body
-            )?.withRenderingMode(.alwaysTemplate)
-            let renderedContext = RenderedItem(
-                image: image,
-                text: value
-            )
-            renderedContexts["math://\(key)"] = renderedContext
-        }
+        let package = MarkdownTextView.PreprocessContent(parserResult: result, theme: theme)
         DispatchQueue.main.async {
-            let markdownView = MarkdownTextView()
-            markdownView.theme = theme
-            markdownView.setMarkdown(nodes.document, renderedContent: renderedContexts)
-            markdownView.alpha = 0
-            markdownView.codePreviewHandler = { [weak self] language, code in
-                let viewer = CodeEditorController(language: language, text: code.string)
-                #if targetEnvironment(macCatalyst)
-                    let nav = UINavigationController(rootViewController: viewer)
-                    nav.view.backgroundColor = .background
-                    let holder = AlertBaseController(
-                        rootViewController: nav,
-                        preferredWidth: 555,
-                        preferredHeight: 555
-                    )
-                    holder.shouldDismissWhenTappedAround = true
-                    holder.shouldDismissWhenEscapeKeyPressed = true
-                #else
-                    let holder = UINavigationController(rootViewController: viewer)
-                    holder.preferredContentSize = .init(width: 555, height: 555 - holder.navigationBar.frame.height)
-                    holder.modalTransitionStyle = .coverVertical
-                    holder.modalPresentationStyle = .formSheet
-                    holder.view.backgroundColor = .background
-                #endif
-                self?.present(holder, animated: true)
+            let markdownView = MarkdownTextView().with {
+                $0.theme = theme
+                $0.bindContentOffset(from: self.scrollView)
+                $0.setMarkdownManually(package)
+                $0.alpha = 0
+            }
+            self.markdownContainerView.addSubview(markdownView)
+            markdownView.snp.makeConstraints { make in
+                make.edges.equalToSuperview()
             }
             self.view.doWithAnimation {
-                self.markdownContainerView.addSubview(markdownView)
-                markdownView.snp.makeConstraints { make in
-                    make.edges.equalToSuperview()
-                }
                 self.requiresUpdateHeight = true
+                self.view.setNeedsLayout()
+                self.view.layoutIfNeeded()
             } completion: {
                 self.indicator.stopAnimating()
                 UIView.animate(withDuration: 0.3) {
                     markdownView.alpha = 1
                 }
+                markdownView.setNeedsLayout()
             }
         }
     }
@@ -121,17 +92,16 @@ class HubModelDetailController: StackScrollController {
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
         let markdownView = markdownContainerView.subviews.first as? MarkdownTextView
-        if let markdownView {
-            let layoutWidth = markdownContainerView.bounds.width
-            if requiresUpdateHeight || layoutWidth != requiresMatchingWidth {
-                let size = markdownView.boundingSize(for: markdownContainerView.bounds.width)
-                markdownView.snp.remakeConstraints { make in
-                    make.edges.equalToSuperview()
-                    make.height.equalTo(size.height).priority(.required)
-                }
-                requiresUpdateHeight = false
-                requiresMatchingWidth = layoutWidth
+        guard let markdownView else { return }
+        let layoutWidth = markdownContainerView.bounds.width
+        if requiresUpdateHeight || layoutWidth != requiresMatchingWidth {
+            let size = markdownView.boundingSize(for: markdownContainerView.bounds.width)
+            markdownView.snp.remakeConstraints { make in
+                make.edges.equalToSuperview()
+                make.height.equalTo(size.height).priority(.required)
             }
+            requiresUpdateHeight = false
+            requiresMatchingWidth = layoutWidth
         }
     }
 
@@ -145,7 +115,7 @@ class HubModelDetailController: StackScrollController {
         card.label.text = model.id
         stackView.addArrangedSubviewWithMargin(card)
         card.snp.makeConstraints { make in
-            make.height.equalTo(card.snp.width).multipliedBy(0.35)
+            make.height.equalTo(128)
         }
 
         stackView.addArrangedSubview(SeparatorView())
@@ -177,6 +147,11 @@ class HubModelDetailController: StackScrollController {
         updateBarItems()
     }
 
+    let downloadButtonIndicator = UIActivityIndicatorView(style: .medium)
+    var downloadSize: UInt64? = nil {
+        didSet { updateBarItems() }
+    }
+
     func updateBarItems() {
         if ModelManager.shared.localModelExists(repoIdentifier: model.id) {
             navigationItem.rightBarButtonItem = .init(
@@ -186,12 +161,43 @@ class HubModelDetailController: StackScrollController {
                 action: #selector(download)
             )
         } else {
-            navigationItem.rightBarButtonItem = .init(
-                title: String(localized: "Download"),
-                style: .plain,
-                target: self,
-                action: #selector(download)
-            )
+            if let downloadSize {
+                if downloadSize > 0 {
+                    let byteText = ByteCountFormatter.string(
+                        fromByteCount: Int64(downloadSize),
+                        countStyle: .file
+                    )
+                    navigationItem.rightBarButtonItem = .init(
+                        title: String(localized: "Download (\(byteText))"),
+                        style: .plain,
+                        target: self,
+                        action: #selector(download)
+                    )
+                } else {
+                    navigationItem.rightBarButtonItem = .init(
+                        title: String(localized: "Download (Unknown Size)"),
+                        style: .plain,
+                        target: self,
+                        action: #selector(download)
+                    )
+                }
+            } else {
+                navigationItem.rightBarButtonItem = .init(customView: downloadButtonIndicator)
+                downloadButtonIndicator.startAnimating()
+                Task.detached {
+                    await self.checkDownloadSize()
+                }
+            }
+        }
+    }
+
+    func checkDownloadSize() async {
+        do {
+            let size = try await ModelManager.shared.checkModelSizeFromHugginFace(identifier: model.id)
+            await MainActor.run { downloadSize = size }
+        } catch {
+            print("[!] failed to check model size: \(error)")
+            await MainActor.run { downloadSize = 0 }
         }
     }
 
@@ -207,12 +213,14 @@ class HubModelDetailController: StackScrollController {
             return
         }
 
+        let sizeText = ByteCountFormatter.string(fromByteCount: Int64(downloadSize ?? 128 * 1024 * 1024 * 1024), countStyle: .file)
+
         if disableWarnings {
             present(downloadController, animated: true)
         } else if model.id.lowercased().hasPrefix("mlx-community/") {
             let alert = AlertViewController(
                 title: String(localized: "Download Model"),
-                message: String(localized: "We are not responsible for the model you are about to download. If we are unable to load this model, the app may crash. Do you want to continue?")
+                message: String(localized: "We are not responsible for the model you are about to download. If we are unable to load this model, the app may crash. Do you want to continue?") + "\n\n" + String(localized: "Estimated download size: \(sizeText)")
             ) { context in
                 context.addAction(title: String(localized: "Cancel")) {
                     context.dispose()
@@ -227,7 +235,7 @@ class HubModelDetailController: StackScrollController {
         } else {
             let alert = AlertViewController(
                 title: String(localized: "Unverified Model"),
-                message: String(localized: "Even if you download this model, it may not work or even crash the app. Do you still want to download this model?")
+                message: String(localized: "Even if you download this model, it may not work or even crash the app. Do you still want to download this model?") + "\n\n" + String(localized: "Estimated download size: \(sizeText)")
             ) { context in
                 context.addAction(title: String(localized: "Cancel")) {
                     context.dispose()
@@ -247,14 +255,6 @@ extension HubModelDetailController {
     class ModelCardView: UIView {
         let background = UIView().with {
             $0.backgroundColor = .accent
-            let img = UIImageView()
-            img.contentMode = .scaleAspectFill
-            img.image = .circularTexture
-            img.alpha = 0.05
-            $0.addSubview(img)
-            img.snp.makeConstraints { make in
-                make.edges.equalToSuperview()
-            }
         }
 
         let icon = UIImageView().with {
@@ -293,10 +293,10 @@ extension HubModelDetailController {
 
             addSubview(stackView)
             stackView.snp.makeConstraints { make in
-                make.left.right.equalToSuperview().inset(20)
+                make.left.right.equalToSuperview().inset(16)
                 make.center.equalToSuperview()
-                make.top.greaterThanOrEqualToSuperview().inset(20)
-                make.bottom.lessThanOrEqualToSuperview().inset(20)
+                make.top.greaterThanOrEqualToSuperview().inset(16)
+                make.bottom.lessThanOrEqualToSuperview().inset(16)
             }
 
             stackView.addArrangedSubview(icon)

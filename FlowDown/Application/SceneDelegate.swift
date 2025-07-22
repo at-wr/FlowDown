@@ -7,6 +7,7 @@
 
 import Combine
 import ConfigurableKit
+import Storage
 import UIKit
 
 @objc(SceneDelegate)
@@ -51,6 +52,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 importModel(from: url)
             case "fdtemplate":
                 importTemplate(from: url)
+            case "fdmcp":
+                importMCPServer(from: url)
             default: break // dont know how
             }
         case "flowdown":
@@ -90,6 +93,31 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
     }
 
+    private func importMCPServer(from url: URL) {
+        _ = url.startAccessingSecurityScopedResource()
+        defer { url.stopAccessingSecurityScopedResource() }
+        try? FileManager.default.startDownloadingUbiquitousItem(at: url)
+        do {
+            let data = try Data(contentsOf: url)
+            let decoder = PropertyListDecoder()
+            let server = try decoder.decode(ModelContextServer.self, from: data)
+            DispatchQueue.main.async {
+                MCPService.shared.insert(server)
+            }
+            let serverName = if let serverUrl = URL(string: server.endpoint), let host = serverUrl.host {
+                host
+            } else if !server.name.isEmpty {
+                server.name
+            } else {
+                "MCP Server"
+            }
+            mainController.queueBootMessage(text: String(localized: "Successfully imported MCP server \(serverName)"))
+        } catch {
+            print("[*] failed to import MCP server from URL: \(url), error: \(error)")
+            mainController.queueBootMessage(text: String(localized: "Failed to import MCP server: \(error.localizedDescription)"))
+        }
+    }
+
     private func handleFlowDownURL(_ url: URL) {
         print("[*] handling incoming message: \(url)")
         guard let host = url.host(), !host.isEmpty else { return }
@@ -103,10 +131,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let pathComponents = url.pathComponents
         guard pathComponents.count >= 2 else { return }
         let encodedMessage = pathComponents[1]
-        guard let message = encodedMessage.removingPercentEncoding,
-              !message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        else { return }
-        mainController.queueNewConversation(text: message)
+        let message = encodedMessage.removingPercentEncoding?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        mainController.queueNewConversation(text: message, shouldSend: !message.isEmpty)
     }
 
     func sceneDidDisconnect(_: UIScene) {}
