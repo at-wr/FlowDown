@@ -85,24 +85,10 @@ open class RemoteChatClient: ChatService {
     }
 
     private func finalizeAccumulatedContent(_ accumulatedContent: String) -> ChatCompletionChunk? {
-        if let (beforeContent, reasoningContent, afterContent) = extractOutermostThinkBlock(from: accumulatedContent) {
-            var deltas = [ChatCompletionChunk.Choice.Delta]()
-
-            if !beforeContent.isEmpty {
-                deltas.append(.init(content: beforeContent))
-            }
-
-            if !reasoningContent.isEmpty {
-                deltas.append(.init(reasoningContent: reasoningContent))
-            }
-
-            if !afterContent.isEmpty {
-                deltas.append(.init(content: afterContent))
-            }
-
-            return deltas.isEmpty ? nil : .init(choices: deltas.map { .init(delta: $0) })
+        if let processedResponse = processAccumulatedContent(accumulatedContent) {
+            processedResponse
         } else {
-            return accumulatedContent.isEmpty ? nil : .init(choices: [.init(delta: .init(content: accumulatedContent))])
+            accumulatedContent.isEmpty ? nil : .init(choices: [.init(delta: .init(content: accumulatedContent))])
         }
     }
 
@@ -182,8 +168,17 @@ open class RemoteChatClient: ChatService {
                                 let newContent = content.joined()
                                 accumulatedContent += newContent
 
+                                // to avoid looooong reasoning
                                 if accumulatedContent.count > 50000 {
-                                    accumulatedContent = String(accumulatedContent.suffix(40000))
+                                    let truncated = String(accumulatedContent.suffix(40000))
+                                    // Avoid splitting incomplete <think> tags
+                                    if let lastStart = truncated.range(of: REASONING_START_TOKEN, options: .backwards),
+                                       !truncated[lastStart.upperBound...].contains(REASONING_END_TOKEN)
+                                    {
+                                        accumulatedContent = String(truncated[..<lastStart.lowerBound])
+                                    } else {
+                                        accumulatedContent = truncated
+                                    }
                                 }
 
                                 let processedResponse = self.processAccumulatedContent(accumulatedContent)
