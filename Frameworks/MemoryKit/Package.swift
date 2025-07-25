@@ -15,13 +15,13 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../Storage"),
-        // .package(url: "https://github.com/objectbox/objectbox-swift-spm.git", from: "4.0.0"),
+        .package(url: "https://github.com/objectbox/objectbox-swift-spm.git", from: "4.0.0"),
         .package(url: "https://github.com/CoreOffice/XMLCoder.git", from: "0.17.0"),
     ],
     targets: [
         .target(name: "MemoryKit", dependencies: [
             "Storage",
-            // .product(name: "ObjectBox", package: "objectbox-swift-spm"),
+            .product(name: "ObjectBox", package: "objectbox-swift-spm"),
             "XMLCoder",
         ]),
     ]
